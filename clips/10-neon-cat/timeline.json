@@ -1,10 +1,10 @@
 {
-  "title": "The Wrong Sum",
+  "title": "Which One Goes First?",
   "duration": 12,
   "fps": 30,
   "bpm": 120,
   "formats": ["9x16"],
-  "loop": false,
+  "loop": true,
   "marks": { "start": 0, "done": 24 },
-  "mix": { "music": 0, "sfx": 0, "loop": false }
+  "mix": { "music": 0, "sfx": 0, "loop": true }
 }
