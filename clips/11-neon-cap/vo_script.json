@@ -1,0 +1,66 @@
+{
+ "note": "Lab clip 11, Find the Maroon Cap: the narrator only (af_heart). The test line n03 is its own line so the pause after it is set by hand.",
+ "take": {
+  "id": "k-heart",
+  "engine": "kokoro",
+  "voice": "af_heart",
+  "speed": 1.0
+ },
+ "ref_text": "The bench outside the stall is warm from the afternoon. A kettle hisses, a cyclist rings his bell, and somebody laughs at the next table.",
+ "cast": [],
+ "cast_lines": [],
+ "lines": [
+  {
+   "id": "n01",
+   "text": "You're looking for the man with the mole. His cap is maroon."
+  },
+  {
+   "id": "n02",
+   "text": "One of these three is him."
+  },
+  {
+   "id": "n03",
+   "text": "Find the maroon cap."
+  },
+  {
+   "id": "n04",
+   "text": "Can't? Neither could the witness."
+  },
+  {
+   "id": "n05",
+   "text": "She swore all three caps were black."
+  },
+  {
+   "id": "n06",
+   "text": "Then the stall switched its bulb on."
+  },
+  {
+   "id": "n07",
+   "text": "Number two. Maroon, the whole time."
+  },
+  {
+   "id": "n07c",
+   "text": "Number two. Maroon."
+  },
+  {
+   "id": "n07d",
+   "text": "The whole time."
+  },
+  {
+   "id": "n08",
+   "text": "If you picked him, you guessed."
+  },
+  {
+   "id": "n09",
+   "text": "A cap doesn't glow. You only see the part of the light it throws back."
+  },
+  {
+   "id": "n10",
+   "text": "That sign makes almost no red, so a maroon cap has nothing to throw back. It turns black."
+  },
+  {
+   "id": "n11",
+   "text": "She wasn't lying. The sign was."
+  }
+ ]
+}
