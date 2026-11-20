@@ -1,0 +1,58 @@
+{
+ "note": "Lab clip 14, Which One Is Him? (round 2's swap, the user's call through HQ, 20 Nov): a real case told as a test, the narrator only (af_heart). n04 is its own line so the pause after it is set by hand. Sources in lab/research.md.",
+ "take": {
+  "id": "k-heart",
+  "engine": "kokoro",
+  "voice": "af_heart",
+  "speed": 1.0
+ },
+ "ref_text": "The bench outside the stall is warm from the afternoon. A kettle hisses, a cyclist rings his bell, and somebody laughs at the next table.",
+ "cast": [],
+ "cast_lines": [],
+ "lines": [
+  {
+   "id": "n01",
+   "text": "You're the witness. Remember the man who stole your rings."
+  },
+  {
+   "id": "n02",
+   "text": "Grey hair. A moustache."
+  },
+  {
+   "id": "n03",
+   "text": "Now the police show you six men."
+  },
+  {
+   "id": "n04",
+   "text": "Which one is him?"
+  },
+  {
+   "id": "n05",
+   "text": "Number four? That's who the women picked, in London, in eighteen ninety-six."
+  },
+  {
+   "id": "n06",
+   "text": "His name was Adolf Beck. He wasn't the swindler."
+  },
+  {
+   "id": "n07",
+   "text": "He was the only man in that line with grey hair and a moustache."
+  },
+  {
+   "id": "n08",
+   "text": "The women remembered grey hair and a moustache. The line gave them only one man to match."
+  },
+  {
+   "id": "n09",
+   "text": "Beck went to prison twice, until the real swindler was caught in nineteen oh four."
+  },
+  {
+   "id": "n10",
+   "text": "His case helped create England's Court of Criminal Appeal."
+  },
+  {
+   "id": "n11",
+   "text": "Today, every face in a fair lineup should fit the description."
+  }
+ ]
+}
