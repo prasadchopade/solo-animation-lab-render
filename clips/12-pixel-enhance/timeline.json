@@ -1,6 +1,6 @@
 {
-  "title": "Find the Maroon Cap",
-  "duration": 34.5,
+  "title": "Enhance",
+  "duration": 39.0,
   "fps": 30,
   "bpm": 120,
   "formats": [
@@ -9,8 +9,8 @@
   "loop": false,
   "marks": {
     "hook": 0,
-    "end": 67.0,
-    "done": 69.0
+    "end": 76.0,
+    "done": 78.0
   },
   "mix": {
     "music": -7,
