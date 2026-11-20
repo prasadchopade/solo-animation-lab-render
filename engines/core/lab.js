@@ -136,6 +136,29 @@
   // ------------------------------------------------------------------ the frame
   // Safe zones (CLAUDE.md): words and the subject stay inside top ≥ 269, right ≤ 950, bottom ≤ 1536.
   const SAFE = { top: 269, right: 950, bottom: 1536, left: 60 };
+  // ?safecheck: every piece of text drawn this frame reports its box in frame pixels, for scripts/safe_check.mjs.
+  // fillText and strokeText on a full-frame canvas are caught here (with the context's transform); lettering drawn
+  // another way (neon tube, pixel blocks) reports itself through LAB.textBox. Text baked once into a cached texture
+  // is only seen on the frame that builds it.
+  const SAFE_CHECK = new URLSearchParams(location.search).has('safecheck'), BOXES = [];
+  window.__textBoxes = BOXES;
+  let SCENERY = 0;
+  function textBox(text, x0, y0, x1, y1) { if (SAFE_CHECK) BOXES.push({ text: String(text), x0, y0, x1, y1, scenery: SCENERY > 0 }); }
+  // scenery(fn): text drawn inside is part of the world (a blackboard, a page the camera crops), not a caption. The
+  // check lists it apart and doesn't fail on it, so mark only what the camera is meant to cut.
+  function scenery(fn) { SCENERY++; try { return fn(); } finally { SCENERY--; } }
+  if (SAFE_CHECK) for (const fn of ['fillText', 'strokeText']) {
+    const orig = CanvasRenderingContext2D.prototype[fn];
+    CanvasRenderingContext2D.prototype[fn] = function (text, x, y, ...rest) {
+      if (this.canvas.width === W && this.canvas.height === H && this.globalAlpha > 0 && String(text).trim()) {
+        const m = this.measureText(text), T = this.getTransform();
+        const xs = [x - m.actualBoundingBoxLeft, x + m.actualBoundingBoxRight], ys = [y - m.actualBoundingBoxAscent, y + m.actualBoundingBoxDescent];
+        const P = xs.flatMap((px) => ys.map((py) => [T.a * px + T.c * py + T.e, T.b * px + T.d * py + T.f]));
+        textBox(text, Math.min(...P.map((q) => q[0])), Math.min(...P.map((q) => q[1])), Math.max(...P.map((q) => q[0])), Math.max(...P.map((q) => q[1])));
+      }
+      return orig.call(this, text, x, y, ...rest);
+    };
+  }
   // film({ draw(g, t), post?(g, t) }): one full-frame canvas; every frame starts from a clean, identity-transformed context
   function film(def) {
     scene({
@@ -143,6 +166,7 @@
       build(root, S) { S.g = C.canvas(root); },
       run(t, b, S) {
         const g = S.g;
+        BOXES.length = 0;
         g.save();
         g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.filter = 'none';
         g.clearRect(0, 0, W, H);
@@ -163,5 +187,5 @@
   }
 
   window.LAB = { W, H, FPS, SAFE, frameOf, held, drawing, hash, rnd, rs, n1, n2, clamp, lerp, E, key, seg, pulse, loopT,
-    tex, pixels, boilPts, resample, pathOf, smoothPath, film, safeOverlay };
+    tex, pixels, boilPts, resample, pathOf, smoothPath, film, safeOverlay, textBox, scenery };
 })();

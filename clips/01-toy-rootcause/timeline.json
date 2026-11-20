@@ -1,10 +1,10 @@
 {
-  "title": "Which One Goes First?",
-  "duration": 12,
+  "title": "Who Started This?",
+  "duration": 16,
   "fps": 30,
   "bpm": 120,
   "formats": ["9x16"],
   "loop": true,
-  "marks": { "start": 0, "done": 24 },
+  "marks": { "start": 0, "done": 32 },
   "mix": { "music": 0, "sfx": 0, "loop": true }
 }
