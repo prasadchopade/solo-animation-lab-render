@@ -1,0 +1,28 @@
+{
+  "title": "Enhance",
+  "duration": 39.5,
+  "fps": 30,
+  "bpm": 120,
+  "formats": [
+    "9x16"
+  ],
+  "loop": false,
+  "marks": {
+    "hook": 0,
+    "end": 77.0,
+    "done": 79.0
+  },
+  "mix": {
+    "music": -7,
+    "sfx": -5,
+    "vo": 3.2,
+    "duck": true,
+    "spectral": true
+  },
+  "voiceover": {
+    "provider": "voice lab",
+    "voice": "k-heart",
+    "file": "vo.json"
+  },
+  "sfx": []
+}
