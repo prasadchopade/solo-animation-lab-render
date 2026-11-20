@@ -1,0 +1,65 @@
+{
+ "note": "Lab clip 12, Enhance: the narrator only (af_heart). 'chai' as reel 38 placed it (/ʧˈI/); n09 also has a variant with the letters A and I spelled in phonemes (n09b).",
+ "take": {
+  "id": "k-heart",
+  "engine": "kokoro",
+  "voice": "af_heart",
+  "speed": 1.0
+ },
+ "ref_text": "The bench outside the stall is warm from the afternoon. A kettle hisses, a cyclist rings his bell, and somebody laughs at the next table.",
+ "cast": [],
+ "cast_lines": [],
+ "lines": [
+  {
+   "id": "n01",
+   "text": "The chai stall's camera caught the man with the mole.",
+   "text_kokoro": "The [chai](/ʧˈI/) stall's camera caught the man with the mole."
+  },
+  {
+   "id": "n02",
+   "text": "Too blurry. So you press enhance."
+  },
+  {
+   "id": "n03",
+   "text": "And there he is."
+  },
+  {
+   "id": "n04",
+   "text": "Is this the man with the mole?"
+  },
+  {
+   "id": "n05",
+   "text": "No mole. A moustache. It can't be him."
+  },
+  {
+   "id": "n06",
+   "text": "It is him."
+  },
+  {
+   "id": "n07",
+   "text": "Shrink both faces down to the camera's size, and you get the same picture."
+  },
+  {
+   "id": "n08",
+   "text": "The camera never kept his mole. So enhance couldn't bring it back. It guessed."
+  },
+  {
+   "id": "n09",
+   "text": "In twenty twenty-four, a judge in Washington State threw out A.I.-enhanced video for exactly this.",
+   "text_kokoro": "In twenty twenty-four, a judge in Washington State threw out A.I. enhanced video for exactly this."
+  },
+  {
+   "id": "n09b",
+   "text": "In twenty twenty-four, a judge in Washington State threw out A.I.-enhanced video for exactly this.",
+   "text_kokoro": "In twenty twenty-four, a judge in Washington State threw out [A.I.](/ˌAˈI/) enhanced video for exactly this."
+  },
+  {
+   "id": "n10",
+   "text": "It showed what the software guessed, not what the camera saw."
+  },
+  {
+   "id": "n11",
+   "text": "Now everyone's looking for a man with a moustache."
+  }
+ ]
+}
