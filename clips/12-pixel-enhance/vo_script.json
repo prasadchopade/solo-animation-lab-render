@@ -1,5 +1,5 @@
 {
- "note": "Lab clip 12, Enhance: the narrator only (af_heart). 'chai' as reel 38 placed it (/ʧˈI/); n09 also has a variant with the letters A and I spelled in phonemes (n09b). n07b and n10b reword n07 and n10: in every take, Whisper small.en heard \"camera's size\" as \"camera size\" and \"what the\" as \"with the\" (round 2, 20 Nov).",
+ "note": "Lab clip 12, Enhance: the narrator only (af_heart). 'chai' as reel 38 placed it (/ʧˈI/); n09 also has a variant with the letters A and I spelled in phonemes (n09b). n07b and n10b reword n07 and n10: in every take, Whisper small.en heard \"camera's size\" as \"camera size\" and \"what the\" as \"with the\" (round 2, 20 Nov). n09c rewords n09: in the voice check of the mix, both Whispers heard \"threw out\" as \"throughout\".",
  "take": {
   "id": "k-heart",
   "engine": "kokoro",
@@ -68,6 +68,11 @@
   {
    "id": "n10b",
    "text": "It showed the software's guess, not the footage."
+  },
+  {
+   "id": "n09c",
+   "text": "In twenty twenty-four, a judge in Washington State rejected A.I.-enhanced video for exactly this.",
+   "text_kokoro": "In twenty twenty-four, a judge in Washington State rejected A.I. enhanced video for exactly this."
   }
  ]
 }
