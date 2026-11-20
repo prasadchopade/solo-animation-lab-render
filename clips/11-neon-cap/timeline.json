@@ -1,6 +1,6 @@
 {
-  "title": "It Wasn't Resonance",
-  "duration": 39.5,
+  "title": "Find the Maroon Cap",
+  "duration": 34.5,
   "fps": 30,
   "bpm": 120,
   "formats": [
@@ -9,8 +9,8 @@
   "loop": false,
   "marks": {
     "hook": 0,
-    "end": 77.0,
-    "done": 79.0
+    "end": 67.0,
+    "done": 69.0
   },
   "mix": {
     "music": -7,
