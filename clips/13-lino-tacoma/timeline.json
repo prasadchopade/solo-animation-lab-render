@@ -1,6 +1,6 @@
 {
-  "title": "Enhance",
-  "duration": 39.0,
+  "title": "It Wasn't Resonance",
+  "duration": 39.5,
   "fps": 30,
   "bpm": 120,
   "formats": [
@@ -9,8 +9,8 @@
   "loop": false,
   "marks": {
     "hook": 0,
-    "end": 76.0,
-    "done": 78.0
+    "end": 77.0,
+    "done": 79.0
   },
   "mix": {
     "music": -7,
