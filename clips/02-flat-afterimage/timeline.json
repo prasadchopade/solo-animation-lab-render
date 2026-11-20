@@ -1,10 +1,10 @@
 {
-  "title": "Who Started This?",
-  "duration": 16,
+  "title": "Did You See Him?",
+  "duration": 20,
   "fps": 30,
   "bpm": 120,
   "formats": ["9x16"],
   "loop": true,
-  "marks": { "start": 0, "done": 32 },
+  "marks": { "start": 0, "done": 40 },
   "mix": { "music": 0, "sfx": 0, "loop": true }
 }
