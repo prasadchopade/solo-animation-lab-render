@@ -1,0 +1,12 @@
+{
+  "name": "root-cause-style-lab",
+  "private": true,
+  "description": "The Style Lab: 10-20 s proof clips of new looks and genres, kept apart from the daily reels (see README.md). Playwright renders the clips; planck bakes 2D physics; perfect-freehand draws ink strokes.",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@fontsource/fredoka": "5.3.0",
+    "perfect-freehand": "1.2.3",
+    "planck": "1.5.1",
+    "playwright": "1.63.0"
+  }
+}

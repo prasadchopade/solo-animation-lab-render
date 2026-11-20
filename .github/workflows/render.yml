@@ -1,0 +1,258 @@
+# THE STYLE LAB's copy of the reels' render workflow (.github/workflows/render.yml in the main repo), changed only to
+# render lab clips: the input is "clip" (a folder under clips/), not "reel". It lives at lab/cloud/render.yml in the lab
+# branch and is pushed to .github/workflows/render.yml of the LAB's own render repo by scripts/lab-render.sh, never to
+# the reels' render repo. Lab clips are 30 fps, so final and draft both run at 30 fps (a final is CRF 16, preset slow).
+#
+#   gh workflow run render.yml -R prasadchopade/solo-animation-lab-render -f clip=01-toy-rootcause -f shards=6 -f mode=final
+#
+# Render a lab clip in the cloud, split across parallel GitHub-hosted machines, and stitch the result.
+#
+#   gh workflow run render.yml -R prasadchopade/solo-animation-lab-render -f clip=<clip> -f shards=6 -f mode=final
+#   gh run watch                                   # follow it
+#   gh run download -R prasadchopade/solo-animation-lab-render --name clip-<clip>-final  # the finished MP4
+#
+# A patch (a fix inside a few seconds): re-render only the shards that contain the change and take every other part
+# from an earlier run of the SAME clip, mode and shard count (its part artifacts live 2 days):
+#   gh workflow run render.yml -R prasadchopade/solo-animation-lab-render -f clip=<clip> -f shards=6 -f mode=final -f only=1,2 -f reuse=<run id>
+#
+# Each shard renders a contiguous, frame-exact slice of clips/<clip> (scripts/render.mjs --range) on its own 4-core
+# Linux runner. Every frame is a pure function of time, so slices rendered on different machines join without seams;
+# the join job concatenates them without re-encoding and muxes the clip's audio/mix.wav.
+#
+# The installs (ffmpeg, Chromium's system packages, the headless shell) come from GitHub's cache, filled by the deps job
+# once per runner image (scripts/cloud-deps.sh), so no shard waits on Ubuntu's mirror. The jobs run on ubuntu-24.04, not
+# ubuntu-latest: the encoder is Ubuntu's ffmpeg, and a new Ubuntu would change it, and every part's bytes, unannounced.
+name: Render lab clip
+
+on:
+  workflow_dispatch:
+    inputs:
+      clip:
+        description: Clip folder name under clips/ (e.g. 01-toy-rootcause)
+        required: true
+      shards:
+        description: Parallel machines (1–20; the free plan runs 20 jobs at once)
+        default: "6"
+        required: true
+      mode:
+        description: "final = the clip's fps (30), CRF 16, preset slow · draft = 30 fps, CRF 22, fast checks"
+        type: choice
+        options: [final, draft]
+        default: final
+      crf:
+        description: x264 quality of a final (16 = the master; 18 keeps a grainy, sparkling film under ~100 MB)
+        default: "16"
+        required: false
+      blur:
+        description: Adaptive motion blur (off by default; on costs ~40 % more render time)
+        type: boolean
+        default: false
+      only:
+        description: "Patch: re-render only these shards (e.g. 1,2); the rest come from the run in reuse"
+        default: ""
+        required: false
+      reuse:
+        description: "Patch: the run id whose parts fill in the other shards (same clip, mode, shards)"
+        default: ""
+        required: false
+
+permissions:
+  contents: read
+  actions: read          # a patch downloads the parts of an earlier run
+
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    outputs:
+      shards: ${{ steps.plan.outputs.shards }}
+      fmt: ${{ steps.plan.outputs.fmt }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: clips/${{ inputs.clip }}/timeline.json
+          sparse-checkout-cone-mode: false
+      - id: plan
+        env:
+          CLIP: ${{ inputs.clip }}
+          SHARDS: ${{ inputs.shards }}
+          MODE: ${{ inputs.mode }}
+          ONLY: ${{ inputs.only }}
+        run: |
+          test -f "clips/$CLIP/timeline.json" || { echo "::error::no clips/$CLIP/timeline.json"; exit 1; }
+          node -e '
+            const tl = JSON.parse(require("fs").readFileSync("clips/" + process.env.CLIP + "/timeline.json", "utf8"));
+            const fps = process.env.MODE === "draft" ? 30 : (tl.fps || 60);
+            const N = Math.round(tl.duration * fps);
+            const n = Math.max(1, Math.min(20, parseInt(process.env.SHARDS, 10) || 12));
+            let shards = [];
+            for (let k = 0; k < n; k++) {
+              const i0 = Math.round(N * k / n), i1 = Math.round(N * (k + 1) / n);
+              if (i1 > i0) shards.push({ k, a: i0 / fps, b: i1 / fps, frames: i1 - i0 });
+            }
+            const only = (process.env.ONLY || "").split(",").map((x) => x.trim()).filter(Boolean).map(Number);
+            if (only.length) shards = shards.filter((s) => only.includes(s.k));   // a patch: these shards only
+            const o = require("fs").createWriteStream(process.env.GITHUB_OUTPUT, { flags: "a" });
+            o.write("shards=" + JSON.stringify(shards) + "\n");
+            o.write("fmt=" + tl.formats[0] + "\n");
+            console.log(`${N} frames @ ${fps} fps in ${shards.length} shards`);'
+
+  # Fills the cache the shards and the join install from, next to plan: a few seconds when this runner image already
+  # has one. A new image installs the last image's files where they still fit, the rest from Ubuntu's mirror; a new
+  # Playwright version or scripts/cloud-deps.sh starts from the mirror.
+  deps:
+    name: installs → cache
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            package.json
+            scripts/cloud-deps.sh
+          sparse-checkout-cone-mode: false
+      - id: key
+        run: bash scripts/cloud-deps.sh key >> "$GITHUB_OUTPUT"
+      - id: cached
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cache/cloud-deps
+            ~/.cache/ms-playwright
+          key: ${{ steps.key.outputs.render }}
+          lookup-only: true
+      - if: steps.cached.outputs.cache-hit != 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cache/cloud-deps
+            ~/.cache/ms-playwright
+          key: ${{ steps.key.outputs.render }}
+          restore-keys: ${{ steps.key.outputs.render-older }}
+      - if: steps.cached.outputs.cache-hit != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: ffmpeg + Playwright + headless Chromium
+        id: fill
+        if: steps.cached.outputs.cache-hit != 'true'
+        continue-on-error: true          # then the shards use the last image's files, or the mirror themselves
+        timeout-minutes: 30
+        run: bash scripts/cloud-deps.sh render
+      - if: steps.fill.outcome == 'success'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache/cloud-deps
+            ~/.cache/ms-playwright
+          key: ${{ steps.key.outputs.render }}
+
+  render:
+    needs: [plan, deps]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: true
+      max-parallel: 20
+      matrix:
+        shard: ${{ fromJson(needs.plan.outputs.shards) }}
+    name: render ${{ matrix.shard.k }} (${{ matrix.shard.frames }} frames)
+    env:
+      CLIP: ${{ inputs.clip }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - id: key
+        run: bash scripts/cloud-deps.sh key >> "$GITHUB_OUTPUT"
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cache/cloud-deps
+            ~/.cache/ms-playwright
+          key: ${{ steps.key.outputs.render }}
+          restore-keys: ${{ steps.key.outputs.render-older }}
+      - name: ffmpeg + Playwright + headless Chromium (from the cache)
+        timeout-minutes: 30
+        run: bash scripts/cloud-deps.sh render
+      - name: Render frames ${{ matrix.shard.a }}s → ${{ matrix.shard.b }}s
+        run: |
+          cd "clips/$CLIP"
+          node ../../scripts/render.mjs --range "${{ matrix.shard.a }},${{ matrix.shard.b }}" --workers 2 ${{ inputs.mode == 'draft' && '--draft' || format('--crf {0}', inputs.crf) }} --blur ${{ inputs.blur && '1' || '0' }}
+          mkdir -p "$GITHUB_WORKSPACE/parts" && mv renders/clip_*.mp4 "$GITHUB_WORKSPACE/parts/part_$(printf %03d ${{ matrix.shard.k }}).mp4"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: part-${{ matrix.shard.k }}
+          path: parts/part_*.mp4
+          retention-days: 2
+          if-no-files-found: error
+
+  join:
+    needs: [plan, render]
+    runs-on: ubuntu-24.04
+    env:
+      CLIP: ${{ inputs.clip }}
+      FMT: ${{ needs.plan.outputs.fmt }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            clips/${{ inputs.clip }}/audio/mix.wav
+            package.json
+            scripts/cloud-deps.sh
+          sparse-checkout-cone-mode: false
+      - id: key
+        run: bash scripts/cloud-deps.sh key >> "$GITHUB_OUTPUT"
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cache/cloud-deps
+            ~/.cache/ms-playwright
+          key: ${{ steps.key.outputs.render }}
+          restore-keys: ${{ steps.key.outputs.render-older }}
+      - name: ffmpeg (from the cache)
+        timeout-minutes: 20
+        run: bash scripts/cloud-deps.sh ffmpeg
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: part-*
+          path: parts
+          merge-multiple: true
+      - name: "Patch: the other parts from run ${{ inputs.reuse }}"
+        if: ${{ inputs.reuse != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          pattern: part-*
+          path: oldparts
+          merge-multiple: true
+          run-id: ${{ inputs.reuse }}
+          github-token: ${{ github.token }}
+      - name: "Patch: keep the new parts, fill in the rest"
+        if: ${{ inputs.reuse != '' }}
+        run: |
+          for f in oldparts/part_*.mp4; do
+            b=$(basename "$f")
+            if [ -f "parts/$b" ]; then cmp -s "$f" "parts/$b" && echo "new  $b (the same bytes as the old one)" || echo "new  $b (changed)"
+            else cp "$f" parts/; echo "kept $b"; fi
+          done
+      - name: Stitch the parts, mux the mix
+        run: |
+          mkdir -p out
+          ls parts/part_*.mp4 | sort | sed "s|^|file '$PWD/|; s|$|'|" > parts.txt
+          cat parts.txt
+          OUT="out/${CLIP}-${{ inputs.mode }}-${FMT}.mp4"
+          MIX="clips/$CLIP/audio/mix.wav"
+          if [ -f "$MIX" ]; then
+            ffmpeg -hide_banner -loglevel error -y -f concat -safe 0 -i parts.txt -i "$MIX" \
+              -map 0:v -map 1:a -c:v copy -c:a aac -b:a 320k -shortest -movflags +faststart "$OUT"
+          else
+            ffmpeg -hide_banner -loglevel error -y -f concat -safe 0 -i parts.txt -c:v copy -movflags +faststart "$OUT"
+          fi
+          ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate,nb_frames:format=duration,size -of compact "$OUT" | tee -a "$GITHUB_STEP_SUMMARY"
+          sha256sum "$OUT" | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clip-${{ inputs.clip }}-${{ inputs.mode }}
+          path: out/*.mp4
+          retention-days: 14
+          if-no-files-found: error
