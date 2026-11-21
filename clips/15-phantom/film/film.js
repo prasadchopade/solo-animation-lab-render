@@ -9,7 +9,7 @@
 (() => {
   const { lerp, seg, rs, drawing } = LAB;
   const { L, shape, cut, gougePath, print, begin } = LINO;
-  C.fonts = ['400 96px Fell', '700 96px Fraunces'];
+  C.fonts = ['400 96px Fell', '700 96px Fraunces', '700 96px Barlow'];
   const N = 3;
   const ease = (k) => k * k * (3 - 2 * k);
 
@@ -19,13 +19,14 @@
   const T0 = (id) => ln(id).t0, T1 = (id) => ln(id).t1;
   const word = (id, w) => { const x = WORDS.find((q) => q.p === id && q.w.toLowerCase().replace(/[^a-z0-9']/g, '') === w); return x ? x.t0 : T0(id); };
   const MAP = T0('n02') - 0.1, TITLE = word('n02', 'they') - 0.1, EVID = T0('n03') - 0.1;
-  const ITEM = [T0('n04b') - 0.35, T0('n05') - 0.35, T0('n06') - 0.35, T0('n07') - 0.35, word('n07', 'stolen') - 0.4, T0('n08') - 0.35];   // each print lands in the pause before its word
+  const ITEM = [T0('n04b') - 0.35, T0('n05') - 0.35, T0('n06') - 0.35, T0('n07') - 0.35, word('n07', 'stolen') - 0.12, T0('n08') - 0.8];   // each print lands in the pause before its word; the officer's in a longer, still one
   const TEST = T0('n09') - 0.1, CARD = [word('n10', 'serial') - 0.1, word('n10', 'petty') - 0.1, word('n10', 'or') - 0.1];
   const CLOCK0 = T1('n10') + 0.05, CLOCK1 = T0('n11') - 0.05, TICK = [word('n11', 'killer'), word('n11', 'thief')];
-  const WIT = T0('n12') - 0.1, MAN = T0('n13') - 0.1, NEXT = T1('n13') + 0.35;
+  const WIT = T0('n12') - 0.1, MANCUT = word('n13', 'man') - 0.04, NEXT = T1('n13') + 0.35;
+  const OFFTAG = word('n08', 'police') - 0.1, ANS = T0('n11') - 0.05, QMARK = T1('n11') + 0.05;   // the officer's tag on her words; the police's answer; C left open
 
   // ------------------------------------------------------------------ type, strokes, tags
-  const FELL = '400 %px Fell', NUM = '700 %px Fraunces';
+  const FELL = '400 %px Fell', NUM = '700 %px Fraunces', BIG = '700 %px Barlow';   // BIG: the big numerals (Fraunces' display 4 thins to a ball on a stem on a phone)
   function type(s, x, y, size, layer = 'ink', font = FELL, align = 'center') { const g = L[layer].g; g.save(); g.fillStyle = '#000'; g.font = font.replace('%', size); g.textAlign = align; g.textBaseline = 'alphabetic'; g.fillText(s, x, y); g.restore(); }
   function typeCut(s, x, y, size) { const g = L.ink.g; g.save(); g.globalCompositeOperation = 'destination-out'; g.fillStyle = '#000'; g.font = FELL.replace('%', size); g.textAlign = 'center'; g.fillText(s, x, y); g.restore(); }
   const ink = (pts, w, layer = 'ink') => { const g = L[layer].g; g.save(); g.fillStyle = '#000'; gougePath(g, LAB.resample(pts, 8), w); g.restore(); };
@@ -61,13 +62,10 @@
   }
   function man(cx, cy, s, pass) {
     const P = (a) => a.map(([x, y]) => [cx + x * s, cy + y * s]), k = 'm' + pass;
-    shape('ink', P([[-190, 330], [-180, 166], [-122, 118], [-46, 104], [46, 104], [122, 118], [180, 166], [190, 330]]), `mcoat${k}`, 2);
-    hole(P([[-40, 106], [40, 106], [12, 222], [-12, 222]]));
-    shape('ink', P([[-16, 110], [16, 110], [10, 172], [-10, 172]]), `mtie${k}`, 1.5);
-    ink(P([[-24, 64], [-26, 106]]), 5 * s); ink(P([[24, 64], [26, 106]]), 5 * s);
-    hole(P(oval(0, 0, 70, 88, 30))); ink(P(oval(0, 0, 70, 88, 30)), 5 * s);                            // a face outline, and nothing in it
-    shape('ink', P([...oval(0, -6, 76, 94, 18, Math.PI * 1.02, Math.PI * 1.98), [74, -24], [62, -50], [0, -60], [-62, -50], [-74, -24]]), `mhair${k}`, 2);
-    ink(P(oval(-80, 4, 10, 18, 12, -1.6, 1.6)), 4 * s); ink(P(oval(80, 4, 10, 18, 12, 1.55, 4.7)), 4 * s);
+    shape('ink', P([[-178, 330], [-170, 178], [-126, 130], [-58, 114], [0, 182], [58, 114], [126, 130], [170, 178], [178, 330]]), `mcoat${k}`, 2);   // her coat
+    hole(P(oval(0, 8, 64, 86, 30))); ink(P(oval(0, 8, 64, 86, 30)), 5 * s);                            // her empty face, now a man's
+    shape('ink', P([...oval(0, -4, 70, 94, 18, Math.PI * 1.02, Math.PI * 1.98), [70, -20], [58, -48], [0, -58], [-58, -48], [-70, -20]]), `mhair${k}`, 2);   // short hair
+    ink(P(oval(-74, 10, 10, 18, 12, -1.6, 1.6)), 4 * s); ink(P(oval(74, 10, 10, 18, 12, 1.55, 4.7)), 4 * s);
   }
 
   // ------------------------------------------------------------------ the evidence, carved
@@ -79,8 +77,8 @@
   }
   function stamp(t, t0) {                                          // SAME DNA, slammed on in red
     if (t < t0) return;
-    const sc = 1 + 0.35 * (1 - seg(t, t0, t0 + 0.09)), w = measure('SAME DNA', 58), g = L.red.g;
-    g.save(); g.translate(735, 640); g.rotate(-0.12); g.scale(sc, sc); g.fillStyle = '#000';
+    const sc = 1 + 0.2 * (1 - seg(t, t0, t0 + 0.09)), w = measure('SAME DNA', 58), g = L.red.g;
+    g.save(); g.translate(715, 640); g.rotate(-0.12); g.scale(sc, sc); g.fillStyle = '#000';
     g.fillRect(-w / 2 - 24, -56, w + 48, 8); g.fillRect(-w / 2 - 24, 30, w + 48, 8);
     g.font = FELL.replace('%', 58); g.textAlign = 'center'; g.fillText('SAME DNA', 0, 10); g.restore();
   }
@@ -130,29 +128,31 @@
   }
 
   // ------------------------------------------------------------------ the map: forty scenes, no borders
-  const DOTS = Array.from({ length: 40 }, (_, i) => {              // three loose clusters, denser in the middle
-    const c = [[560, 830, 190, 140], [810, 1120, 110, 110], [250, 1140, 120, 130]][i % 3];
+  const DOTS = Array.from({ length: 40 }, (_, i) => {              // mostly Germany, a few in Austria, one in France (Wikipedia's list; the split is illustrative)
+    const c = i % 10 === 4 ? [810, 1130, 90, 80] : i === 7 ? [250, 1150, 10, 10] : [540, 850, 230, 170];
     return [c[0] + (rs('dx', i) + rs('ex', i)) * 0.5 * c[2], c[1] + (rs('dy', i) + rs('ey', i)) * 0.5 * c[3]];
   });
   function map(t, pass) {
-    const n = Math.min(40, Math.max(0, Math.floor((t - MAP - 0.2) / 0.04) + 1));
+    const n = Math.min(40, Math.max(0, Math.floor((t - MAP - 0.15) / 0.03) + 1));
     for (let i = 0; i < n; i++) shape('red', oval(DOTS[i][0], DOTS[i][1], 14, 14, 10), `dot${i}${pass}`, 1, 6);
-    type('GERMANY', 560, 640, 42); type('AUSTRIA', 810, 1300, 42); type('FRANCE', 250, 1340, 42);
-    type(String(n), 505, 430, 150, 'ink', NUM); type(n === 1 ? 'CRIME SCENE' : 'CRIME SCENES', 505, 505, 56);
-    if (n >= 40) type('1993 – 2009', 505, 1470, 72, 'ink', NUM);
+    type('GERMANY', 540, 620, 42); type('AUSTRIA', 810, 1270, 42); type('FRANCE', 250, 1240, 42);
+    type(String(n), 505, 440, 160, 'ink', BIG); type(n === 1 ? 'CRIME SCENE' : 'CRIME SCENES', 505, 515, 56);
+    type('1993 – 2009', 505, 1470, 84, 'ink', BIG);
   }
 
   // ------------------------------------------------------------------ the test
-  function testCard(letter, text, y) {
-    const w = 800, h = 150;
+  function testCard(letter, text, y, filled) {                     // the card is there from the question; its answer prints on its word
+    const w = 820, h = 150;
     shape('ink', box(505, y, w + 12, h + 12), `card${letter}`, 1.2, 10); hole(box(505, y, w, h));
-    shape('ink', oval(190, y, 50, 50, 22), `cl${letter}`, 1); typeCut(letter, 190, y + 22, 64);
-    type(text, 262, y + 20, text.length > 16 ? 44 : 60, 'ink', FELL, 'left');
+    if (!filled) return;
+    shape('ink', oval(180, y, 50, 50, 22), `cl${letter}`, 1); typeCut(letter, 180, y + 22, 64);
+    type(text, 250, y + 17, 44, 'ink', FELL, 'left');
   }
   function clockFace(t) {
-    ink(oval(505, 575, 58, 58, 32), 7); ink([[505, 575], [505, 535]], 6);
+    for (let i = 0; i < 12; i++) { const a = i * Math.PI / 6; ink([[505 + Math.cos(a) * 62, 575 + Math.sin(a) * 62], [505 + Math.cos(a) * 72, 575 + Math.sin(a) * 72]], 5); }
+    ink(oval(505, 575, 82, 82, 36), 8);
     const a = -Math.PI / 2 + Math.PI * 2 * seg(t, CLOCK0, CLOCK1);
-    ink([[505, 575], [505 + Math.cos(a) * 46, 575 + Math.sin(a) * 46]], 7, 'red');
+    ink([[505, 575], [505 + Math.cos(a) * 64, 575 + Math.sin(a) * 64]], 10, 'red');
   }
   const tick = (x, y) => ink([[x - 30, y], [x - 8, y + 24], [x + 34, y - 30]], 12, 'red');
 
@@ -162,35 +162,36 @@
       for (const k of ['ink', 'red']) L[k].g.setTransform(1, 0, 0, 1, 0, 0);
       begin();
       if (t < MAP) {                                               // frame 0: a woman with no face, and the claim
-        view(1 + 0.05 * seg(t, 0, MAP), 505, 1000, 505, 1000, () => woman(505, 1120, 2.3, pass));
-        type('40', 505, 440, 150, 'ink', NUM); type('CRIME SCENES.', 505, 525, 76); type('ONE WOMAN.', 505, 600, 64, 'red');
+        view(1 + 0.1 * seg(t, 0, MAP), 505, 1000, 505, 1000, () => woman(505, 1120, 2.3, pass));
+        type('40', 505, 450, 170, 'ink', BIG); type('CRIME SCENES.', 505, 525, 76); type('ONE WOMAN.', 505, 600, 64, 'red');
       } else if (t < TITLE) {                                      // three countries, sixteen years: the dots counted in
         map(t, pass);
       } else if (t < EVID) {                                       // the title
-        view(pop(t, TITLE), 505, 1080, 505, 1080, () => woman(505, 1090, 1.6, pass));
-        type('THE WOMAN', 505, 380, 92); type('WITHOUT A FACE', 505, 470, 92); type('PART 1', 505, 545, 44, 'red', NUM);
+        view(pop(t, TITLE), 505, 1200, 505, 1200, () => woman(505, 1180, 3.0, pass));
+        type('THE WOMAN', 505, 380, 92); type('WITHOUT A FACE', 505, 470, 92);
       } else if (t < ITEM[0]) {                                    // here's where her DNA turned up
         view(pop(t, EVID), 505, 920, 505, 920, () => helix(505, 920, 1.6));
         type('HER DNA', 505, 400, 96);
       } else if (t < TEST) {                                       // the evidence, one print each, all stamped the same
         const i = ITEM.filter((x) => t >= x).length - 1;
-        const draw = [cup, cookie, pistol, syringe, car, badge][i], label = ['MURDER · 1993', 'BREAK-IN', 'ROBBERY · FRANCE', 'HEROIN', 'STOLEN CAR', 'POLICE OFFICER · 2007'][i];
-        view(pop(t, ITEM[i]), 505, 940, 505, 940, () => draw(505, 940, i === 4 ? 1.45 : 1.6, pass));
+        const draw = [cup, cookie, pistol, syringe, car, badge][i], label = ['MURDER · 1993', 'BREAK-IN', 'ROBBERY · FRANCE', 'SYRINGE', 'STOLEN CAR', 'POLICE OFFICER · 2007'][i];
+        const still = i === 5;                                   // the officer: her own still beat, no slam, no stamp
+        view(still ? 1 : pop(t, ITEM[i]), 505, 940, 505, 940, () => draw(505, 940, i === 4 ? 1.45 : 1.6, pass));
         const dated = /\d/.test(label);
-        tag(label, 505, 1330, dated ? 46 : 52, dated ? NUM : FELL);
-        stamp(t, ITEM[i] + 0.12);
+        if (!still || t >= OFFTAG) tag(label, 505, 1330, dated ? 46 : 52, dated ? NUM : FELL);
+        if (!still) stamp(t, ITEM[i] + 0.12);
       } else if (t < WIT) {                                        // who is she? the cards, the clock, then the police's answer
-        type('WHO IS SHE?', 505, 400, 96);
-        if (t >= CLOCK0 - 0.3) clockFace(t);
-        const cards = [['A', 'A SERIAL KILLER', 760], ['B', 'A PETTY THIEF', 960], ['C', 'MORE THAN ONE PERSON', 1160]];
-        cards.forEach(([l, s, y], i) => { if (t >= CARD[i]) testCard(l, s, y); });
-        TICK.forEach((x, i) => { if (t >= x) tick(860, cards[i][2]); });
-      } else if (t < MAN) {                                        // but the people who saw her?
-        view(1 + 0.04 * seg(t, WIT, MAN), 505, 1000, 505, 1000, () => woman(505, 1100, 2.0, pass));
-      } else {                                                     // some said she looked like a man
-        woman(300, 960, 1.2, pass);
-        if (t >= MAN + 0.25) view(pop(t, MAN + 0.25), 705, 960, 705, 960, () => man(705, 960, 1.2, pass));
-        if (t >= NEXT) { type('PART 2', 505, 1440, 64, 'red', NUM); type('THE PROFILE', 505, 1505, 56); }
+        if (t < ANS) type('WHO IS SHE?', 505, 400, 96); else type('POLICE BELIEVED:', 505, 400, 88);   // the ticks are the police's, never the answer key
+        if (t < CLOCK1) clockFace(t);
+        const cards = [['A', 'A SERIAL KILLER', 780], ['B', 'A PETTY THIEF', 980], ['C', 'MORE THAN ONE PERSON', 1180]];
+        cards.forEach(([l, s, y], i) => testCard(l, s, y, t >= CARD[i]));
+        TICK.forEach((x, i) => { if (t >= x) tick(870, cards[i][2]); });
+        if (t >= QMARK) { const sc = pop(t, QMARK); const g = L.red.g; g.save(); g.translate(872, 1180); g.scale(sc, sc); g.fillStyle = '#000'; g.font = FELL.replace('%', 104); g.textAlign = 'center'; g.fillText('?', 0, 36); g.restore(); }
+      } else if (t < MANCUT) {                                     // but the people who saw her?
+        view(1 + 0.08 * seg(t, WIT, MANCUT), 505, 1000, 505, 1000, () => woman(505, 1120, 2.3, pass));
+      } else {                                                     // some said she looked like a man: the cut lands on "man"
+        view(1.08, 505, 1000, 505, 1000, () => man(505, 1120, 2.3, pass));
+        if (t >= NEXT) { type('PART 2', 505, 420, 84, 'red', NUM); type('THE HUNT', 505, 505, 64); }
       }
       print(g, pass);
       LAB.safeOverlay(g);
