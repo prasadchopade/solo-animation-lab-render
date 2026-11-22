@@ -1,78 +1,82 @@
 {
- "note": "Lab clip 15, The Woman Without a Face, part 1 of 4 (round 3, the user's pick, 21 Nov): the Phantom of Heilbronn told as a test, the narrator only (af_heart). n09/n10 and n12/n13 are separate lines so the pauses are set by hand. Sources in lab/research.md, Round 3. 22 Nov: re-cut on opening A (the user's pick); a01 and qa were voiced in clips/15-openings and copied in.",
- "take": {
-  "id": "k-heart",
-  "engine": "kokoro",
-  "voice": "af_heart",
-  "speed": 1.0
- },
- "ref_text": "The bench outside the stall is warm from the afternoon. A kettle hisses, a cyclist rings his bell, and somebody laughs at the next table.",
- "cast": [],
- "cast_lines": [],
- "lines": [
-  {
-   "id": "a01",
-   "text": "Her DNA was at forty crime scenes."
+  "note": "Lab clip 15, The Woman Without a Face, part 1 of 4 (round 3, the user's pick, 21 Nov): the Phantom of Heilbronn told as a test, the narrator only (af_heart). n09/n10 and n12/n13 are separate lines so the pauses are set by hand. Sources in lab/research.md, Round 3. 22 Nov: re-cut on opening A (the user's pick); a01 and qa were voiced in clips/15-openings and copied in. 22 Nov: n08b drops n08's \"And\", so the officer's line stands apart from the evidence list (a fresh review's note).",
+  "take": {
+    "id": "k-heart",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "speed": 1.0
   },
-  {
-   "id": "qa",
-   "text": "Killer, thief, or something else? Decide before the end."
-  },
-  {
-   "id": "n01",
-   "text": "You're a detective. One woman's DNA has turned up at forty crime scenes."
-  },
-  {
-   "id": "n02",
-   "text": "Three countries. Sixteen years. They call her the woman without a face."
-  },
-  {
-   "id": "n03",
-   "text": "Here's where her DNA turned up."
-  },
-  {
-   "id": "n04",
-   "text": "A cup, at a murder in nineteen ninety-three."
-  },
-  {
-   "id": "n04b",
-   "text": "A murder in nineteen ninety-three."
-  },
-  {
-   "id": "n05",
-   "text": "A cookie, at a break-in."
-  },
-  {
-   "id": "n06",
-   "text": "A toy pistol, after a robbery in France."
-  },
-  {
-   "id": "n07",
-   "text": "A heroin syringe. A stolen car."
-  },
-  {
-   "id": "n08",
-   "text": "And in two thousand seven, the murder of a police officer."
-  },
-  {
-   "id": "n09",
-   "text": "So who is she?"
-  },
-  {
-   "id": "n10",
-   "text": "A serial killer? A petty thief? Or more than one person?"
-  },
-  {
-   "id": "n11",
-   "text": "Police believed she was both. A brutal killer, and a common thief."
-  },
-  {
-   "id": "n12",
-   "text": "But the people who saw her?"
-  },
-  {
-   "id": "n13",
-   "text": "Some said she looked like a man."
-  }
- ]
+  "ref_text": "The bench outside the stall is warm from the afternoon. A kettle hisses, a cyclist rings his bell, and somebody laughs at the next table.",
+  "cast": [],
+  "cast_lines": [],
+  "lines": [
+    {
+      "id": "a01",
+      "text": "Her DNA was at forty crime scenes."
+    },
+    {
+      "id": "qa",
+      "text": "Killer, thief, or something else? Decide before the end."
+    },
+    {
+      "id": "n01",
+      "text": "You're a detective. One woman's DNA has turned up at forty crime scenes."
+    },
+    {
+      "id": "n02",
+      "text": "Three countries. Sixteen years. They call her the woman without a face."
+    },
+    {
+      "id": "n03",
+      "text": "Here's where her DNA turned up."
+    },
+    {
+      "id": "n04",
+      "text": "A cup, at a murder in nineteen ninety-three."
+    },
+    {
+      "id": "n04b",
+      "text": "A murder in nineteen ninety-three."
+    },
+    {
+      "id": "n05",
+      "text": "A cookie, at a break-in."
+    },
+    {
+      "id": "n06",
+      "text": "A toy pistol, after a robbery in France."
+    },
+    {
+      "id": "n07",
+      "text": "A heroin syringe. A stolen car."
+    },
+    {
+      "id": "n08",
+      "text": "And in two thousand seven, the murder of a police officer."
+    },
+    {
+      "id": "n08b",
+      "text": "In two thousand seven, the murder of a police officer."
+    },
+    {
+      "id": "n09",
+      "text": "So who is she?"
+    },
+    {
+      "id": "n10",
+      "text": "A serial killer? A petty thief? Or more than one person?"
+    },
+    {
+      "id": "n11",
+      "text": "Police believed she was both. A brutal killer, and a common thief."
+    },
+    {
+      "id": "n12",
+      "text": "But the people who saw her?"
+    },
+    {
+      "id": "n13",
+      "text": "Some said she looked like a man."
+    }
+  ]
 }
