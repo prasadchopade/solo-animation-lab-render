@@ -1,9 +1,10 @@
 // The Woman Without a Face, part 1 of 4 (lab clip 15), version 3: re-cut on opening A, the user's pick ("A, with your
-// fixes", 22 Nov). Four crime-scene prints flick past with the same faceless woman in each, under "40 CRIME SCENES.":
-// "Her DNA was at forty crime scenes." By 3 s, the test: "Killer, thief, or something else? Decide before the end." A
-// clock in the corner runs from "Decide" to the answer. Fewer clues (three countries, sixteen years; a cookie; a toy
-// pistol; then the officer's own still beat), "So who is she?", the police's answer (killer and thief, labelled as
-// theirs; SOMETHING ELSE left open), and the hook out: "Some said she looked like a man."
+// fixes", 22 Nov). Crime-scene prints flick past with the same faceless woman in each, under "40 CRIME SCENES.": "Her
+// DNA was at forty crime scenes." By 3 s, the test, A, B or C: "Killer, thief, or something else? Decide before the
+// end." A clock in the corner runs from "Decide" to the last word, "man". Fewer clues (three countries, sixteen years; a
+// cookie; a toy pistol), then bare paper and the officer's own still beat. "So who is she?" The police's picks are
+// circled, not ticked; C keeps a red "?". The end sets the DNA (a woman) beside some witnesses (a man).
+// Fixed after a fresh review of the first cut: see README, "Fixed after a fresh review".
 // Every figure is invented; sources in lab/research.md, Round 3. Linocut: black ink on bone paper, one red, re-carved on
 // threes. Type: IM Fell English for words; Barlow Condensed for big numbers; Fraunces for dated tags.
 (() => {
@@ -19,17 +20,18 @@
   const ln = (id) => VO.find((v) => v.id === id) || { t0: 0, t1: 0 };
   const T0 = (id) => ln(id).t0, T1 = (id) => ln(id).t1;
   const word = (id, w) => { const x = WORDS.find((q) => q.p === id && q.w.toLowerCase().replace(/[^a-z0-9']/g, '') === w); return x ? x.t0 : T0(id); };
-  const OPENQ = T0('qa'), DECIDE = word('qa', 'decide');
+  const SWAP = word('qa', 'killer') - 0.05, DECIDE = word('qa', 'decide');   // the claim gives way to the test on one frame
   const MAP = T0('n02') - 0.1, TITLE = word('n02', 'they') - 0.1, EVID = T0('n03') - 0.1;
-  const ITEM = [T0('n05') - 0.35, T0('n06') - 0.35, T0('n08') - 0.8];   // the cookie, the toy pistol; the officer's in a longer, still pause
-  const OFFTAG = word('n08', 'police') - 0.1;
-  const TEST = T0('n09') - 0.1, ANS = T0('n11') - 0.05, TICK = [word('n11', 'killer'), word('n11', 'thief')], QMARK = T1('n11') + 0.05;
-  const WIT = T0('n12') - 0.1, MANCUT = word('n13', 'man') - 0.04, NEXT = T1('n13') + 0.35;
+  const ITEM = [T0('n05') - 0.35, T0('n06') - 0.35];                // the cookie, the toy pistol: each lands in the pause before its line
+  const TAGT = [word('n05', 'breakin') - 0.05, word('n06', 'toy') - 0.05];   // and its tag on its word
+  const BLANK = T1('n06') + 0.1, BADGE = T0('n08b') - 0.55, OFFTAG = word('n08b', 'police') - 0.1;   // the officer: bare paper first
+  const TEST = T0('n09') - 0.1, ANS = T0('n11') - 0.05, BOTH = word('n11', 'both') - 0.05, QMARK = T1('n11') + 0.05;
+  const WIT = T0('n12') - 0.1, WITR = word('n12', 'people') - 0.05, MANCUT = word('n13', 'man') - 0.04, NEXT = T1('n13') + 0.35;
 
   // ------------------------------------------------------------------ type, strokes, tags
   const FELL = '400 %px Fell', NUM = '700 %px Fraunces', BIG = '700 %px Barlow';
   function type(s, x, y, size, layer = 'ink', font = FELL, align = 'center') { const g = L[layer].g; g.save(); g.fillStyle = '#000'; g.font = font.replace('%', size); g.textAlign = align; g.textBaseline = 'alphabetic'; g.fillText(s, x, y); g.restore(); }
-  function typeCut(s, x, y, size) { const g = L.ink.g; g.save(); g.globalCompositeOperation = 'destination-out'; g.fillStyle = '#000'; g.font = FELL.replace('%', size); g.textAlign = 'center'; g.fillText(s, x, y); g.restore(); }
+  function typeCut(s, x, y, size, font = FELL) { const g = L.ink.g; g.save(); g.globalCompositeOperation = 'destination-out'; g.fillStyle = '#000'; g.font = font.replace('%', size); g.textAlign = 'center'; g.fillText(s, x, y); g.restore(); }
   const ink = (pts, w, layer = 'ink') => { const g = L[layer].g; g.save(); g.fillStyle = '#000'; gougePath(g, LAB.resample(pts, 8), w); g.restore(); };
   const hole = (p) => { const g = L.ink.g; g.save(); g.globalCompositeOperation = 'destination-out'; g.beginPath(); g.moveTo(p[0][0], p[0][1]); for (const q of p.slice(1)) g.lineTo(q[0], q[1]); g.closePath(); g.fill(); g.restore(); };
   const oval = (cx, cy, rx, ry, n = 28, a0 = 0, a1 = Math.PI * 2) => Array.from({ length: n + 1 }, (_, k) => { const a = a0 + (a1 - a0) * k / n; return [cx + Math.cos(a) * rx, cy + Math.sin(a) * ry]; });
@@ -63,15 +65,15 @@
   function man(cx, cy, s, pass) {
     const P = (a) => a.map(([x, y]) => [cx + x * s, cy + y * s]), k = 'm' + pass;
     shape('ink', P([[-178, 330], [-170, 178], [-126, 130], [-58, 114], [0, 182], [58, 114], [126, 130], [170, 178], [178, 330]]), `mcoat${k}`, 2);
+    for (const sx of [-1, 1]) shape('ink', P(oval(sx * 70, 14, 16, 26, 14)), `mear${sx}${k}`, 1);   // ears, solid, behind the face
     hole(P(oval(0, 8, 64, 86, 30))); ink(P(oval(0, 8, 64, 86, 30)), 5 * s);
     shape('ink', P([...oval(0, -4, 70, 94, 18, Math.PI * 1.02, Math.PI * 1.98), [70, -20], [58, -48], [0, -58], [-58, -48], [-70, -20]]), `mhair${k}`, 2);
-    ink(P(oval(-74, 10, 10, 18, 12, -1.6, 1.6)), 4 * s); ink(P(oval(74, 10, 10, 18, 12, 1.55, 4.7)), 4 * s);
   }
 
   // ------------------------------------------------------------------ evidence
-  function helix(cx, cy, s, layer = 'red') {
+  function helix(cx, cy, s, turn = 0, layer = 'red') {             // turn: how far it has rotated (radians)
     const A = [], B = [];
-    for (let i = 0; i <= 48; i++) { const u = i / 48, y = cy + (u - 0.5) * 360 * s, ph = u * 4 * Math.PI; A.push([cx + Math.sin(ph) * 64 * s, y]); B.push([cx - Math.sin(ph) * 64 * s, y]); }
+    for (let i = 0; i <= 48; i++) { const u = i / 48, y = cy + (u - 0.5) * 360 * s, ph = u * 4 * Math.PI + turn; A.push([cx + Math.sin(ph) * 64 * s, y]); B.push([cx - Math.sin(ph) * 64 * s, y]); }
     ink(A, 10 * s + 2, layer); ink(B, 10 * s + 2, layer);
     for (let i = 3; i < 48; i += 4) ink([A[i], B[i]], 5 * s + 1, layer);
   }
@@ -95,12 +97,14 @@
     hole(P(oval(128, -98, 76, 76, 22)));
     for (const [x, y] of [[-64, -44], [12, 34], [-34, 86], [64, 70], [-92, 30], [22, -64], [-20, -110]]) hole(P(oval(x, y, 15, 11, 10)));
   }
-  function pistol(cx, cy, s, pass) {
-    const P = (a) => a.map(([x, y]) => [cx + x * s, cy + y * s]), k = 'pi' + pass;
-    shape('ink', P([[-170, -70], [150, -70], [150, -14], [-40, -14], [-56, 20], [-20, 150], [-104, 160], [-150, 30], [-176, 10]]), `pib${k}`, 2);
-    ink(P(oval(-6, 24, 34, 30, 16, -0.2, 3.3)), 9 * s);
-    shape('red', P([[150, -74], [206, -74], [206, -10], [150, -10]]), `pit${k}`, 1.5);
-    cut(LAB.resample(P([[-140, -50], [120, -50]]), 8), 6 * s);
+  function pistol(cx, cy, s, pass) {                               // a chunky toy: rounded muzzle with a plug, a closed trigger guard,
+    const P = (a) => a.map(([x, y]) => [cx + x * s, cy + y * s]), k = 'pi' + pass;   // moulded rivets; no red (it read as a flash)
+    shape('ink', P([[-188, -60], [-176, -92], [128, -92], [150, -80], [156, -50], [150, -20], [128, -8], [-36, -8], [-50, 24], [-22, 156], [-36, 172], [-112, 172], [-128, 156], [-160, 30], [-184, 4]]), `pib${k}`, 2);
+    shape('ink', P([[160, -84], [196, -84], [206, -50], [196, -16], [160, -16]]), `pip${k}`, 1.5);
+    ink(P([[-46, -14], [-46, 30], [-32, 58], [20, 62], [46, 38], [46, -14]]), 10 * s);   // the trigger guard, closed by the barrel
+    ink(P([[-8, -10], [-2, 18], [6, 34]]), 9 * s);
+    cut(LAB.resample(P([[-150, -62], [112, -62]]), 8), 7 * s);
+    for (const [x, y] of [[-96, 56], [-86, 104], [-104, 140]]) hole(P(oval(x, y, 10, 10, 10)));
   }
   function car(cx, cy, s, pass) {
     const P = (a) => a.map(([x, y]) => [cx + x * s, cy + y * s]), k = 'car' + pass;
@@ -119,7 +123,8 @@
 
   // ------------------------------------------------------------------ the opening: crime-scene prints, the same woman in each
   // The prints are kept to a similar middle tone (dark areas hatched with carved lines) so no cut flashes the whole frame.
-  function hatch(x0, y0, x1, y1, key) { shape('ink', [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], key, 1.5); for (let y = y0 + 9; y < y1; y += 18) cut(LAB.resample([[x0, y], [x1, y + 4]], 8), 8); }
+  // Lines every 26 px, not 18: at Instagram's bitrates the finer hatching smeared.
+  function hatch(x0, y0, x1, y1, key) { shape('ink', [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], key, 1.5); for (let y = y0 + 13; y < y1; y += 26) cut(LAB.resample([[x0, y], [x1, y + 4]], 8), 11); }
   const SPOT = [690, 840], SS = 0.75;                              // where she stands in prints 1-3, about a third of the print's height
   const longCoat = (cx, cy, s, floor, key) => shape('ink', [[cx - 176 * s, cy + 318 * s], [cx + 176 * s, cy + 318 * s], [cx + 150 * s, floor],
     [cx + 9, floor], [cx + 5, floor - 34 * s], [cx - 5, floor - 34 * s], [cx - 9, floor], [cx - 150 * s, floor]], key, 1.5);   // a long coat to the floor, so she stands
@@ -135,7 +140,8 @@
     },
     14: (pass) => {                                                // a forced window, the cookie on the sill; she's outside
       hatch(105, 470, 905, 1450, `aw2${pass}`); hole([[500, 600], [880, 600], [880, 1120], [500, 1120]]);
-      for (const [a, b] of [[[500, 760], [620, 700]], [[620, 700], [660, 800]], [[620, 700], [650, 600]]]) ink([a, b], 6);
+      for (let j = 0; j < 7; j++) { const a = 0.15 + j * 0.9, r = 70 + 22 * (j % 3); ink([[548, 652], [548 + Math.cos(a) * r, 652 + Math.sin(a) * r]], 5); }   // a spider-web crack in the
+      for (const r of [24, 46]) ink(oval(548, 652, r, r * 0.9, 9).map(([x, y], j) => [x + (j % 2 ? 4 : -3), y]), 4);   // corner, clear of her head
       woman(SPOT[0], SPOT[1] + 20, SS, pass);
       shape('ink', [[470, 1120], [905, 1120], [905, 1150], [470, 1150]], `as2${pass}`, 1.2); cookie(560, 1085, 0.24, pass);
     },
@@ -153,14 +159,14 @@
       for (const [y, r] of [[700, -0.18], [1250, 0.14]]) { const g = L.red.g; g.save(); g.translate(505, y); g.rotate(r); g.fillStyle = '#000'; g.fillRect(-560, -34, 1120, 68); g.restore(); }
     },
   };
-  function photo(n, pass, rot) {
+  function photo(n, pass, rot, zin = 1) {                          // zin: the view inside the print closing in on her face
     for (const k of ['ink', 'red']) { const g = L[k].g; g.save(); g.translate(505, 960); g.rotate(rot); g.translate(-505, -960); }
     try {
       shape('ink', box(505, 960, 840, 1020), `pe${n}`, 1.5, 12); hole(box(505, 960, 800, 980));
-      for (const k of ['ink', 'red']) { const g = L[k].g; g.save(); g.beginPath(); g.rect(105, 470, 800, 980); g.clip(); }
+      for (const k of ['ink', 'red']) { const g = L[k].g; g.save(); g.beginPath(); g.rect(105, 470, 800, 980); g.clip(); g.translate(505, 1040); g.scale(zin, zin); g.translate(-505, -1040); }
       try { SCENES[n](pass); } finally { for (const k of ['ink', 'red']) L[k].g.restore(); }
-      shape('ink', box(250, 1395, 280, 70), `pt${n}`, 1, 10); hole(box(250, 1395, 266, 56));
-      type(`SCENE ${n} / 40`, 250, 1412, 40, 'ink', BIG);
+      shape('ink', box(268, 1388, 336, 86), `pt${n}`, 1, 10); hole(box(268, 1388, 322, 72));
+      type(`SCENE ${n} / 40`, 268, 1406, 52, 'ink', BIG);
     } finally { for (const k of ['ink', 'red']) L[k].g.restore(); }
   }
   // (b), kept: frame 0 is the closing print, her face behind the tape, held through "Her DNA"; then back through prints 1,
@@ -168,28 +174,36 @@
   // the room changes around her and she doesn't. (a), tried: the same spot in every print, 1 to 40 (README).
   const CUTS = OPENING === 'a' ? [[1, 0], [14, 0.6], [27, 1.2], [40, 1.8]]
     : [[40, 0], [1, word('a01', 'was') - 0.03], [14, word('a01', 'forty') - 0.03], [27, word('a01', 'crime') - 0.03], [40, word('a01', 'scenes') - 0.03]];
+  // The test's answers carry the same letters as the cards later, so comments can say "C".
+  const OPTS = [['A', 'KILLER?', 'killer'], ['B', 'THIEF?', 'thief'], ['C', 'SOMETHING ELSE?', 'something']];
+  function option(l, s, y, sc) {
+    const g = L.ink.g, cy = y - 27;
+    g.save(); g.translate(112, cy); g.scale(sc, sc); g.translate(-112, -cy);
+    shape('ink', oval(146, cy, 34, 34, 20), `ol${l}`, 1); typeCut(l, 146, cy + 16, 46, BIG);
+    type(s, 196, y, 76, 'ink', BIG, 'left');
+    g.restore();
+  }
   function opening(t, pass) {
     let i = 0; while (i + 1 < CUTS.length && t >= CUTS[i + 1][1]) i++;
     const [n, c] = CUTS[i], z = 0.9 * pop(t, c, 0.05) * (1 + 0.008 * (t - c));   // each print lands, then creeps in
-    view(z, 505, 960, 505, 1056, () => photo(n, pass, { 1: -0.02, 14: 0.025, 27: -0.03, 40: 0.01 }[n]));
-    if (t < OPENQ - 0.1) { type('40', 505, 455, 200, 'ink', BIG); type('CRIME SCENES.', 505, 557, 92, 'ink', BIG); }   // the claim: the biggest thing on frame 0
-    else ['KILLER?', 'THIEF?', 'SOMETHING ELSE?'].forEach((s, k) => {                 // the test, word by word
-      const t0 = word('qa', ['killer', 'thief', 'something'][k]) - 0.05;
-      if (t >= t0) { const g = L.ink.g, sc = pop(t, t0, 0.15), y = 372 + k * 82; g.save(); g.translate(112, y); g.scale(sc, sc); g.translate(-112, -y); type(s, 112, y, 70, 'ink', FELL, 'left'); g.restore(); }
-    });
+    const zin = i === CUTS.length - 1 ? 1 + 0.3 * ease(seg(t, SWAP, MAP)) : 1;    // while the test is asked, the view closes in on her face
+    view(z, 505, 960, 505, 1056, () => photo(n, pass, { 1: -0.02, 14: 0.025, 27: -0.03, 40: 0.01 }[n], zin));
+    if (t < SWAP) { type('40', 505, 445, 200, 'ink', BIG); type('CRIME SCENES.', 505, 545, 92, 'ink', BIG); }   // the claim: the biggest thing on frame 0
+    else OPTS.forEach(([l, s, w], k) => { const t0 = k ? word('qa', w) - 0.05 : SWAP; if (t >= t0) option(l, s, 380 + k * 88, pop(t, t0, 0.15)); });
   }
 
-  // ------------------------------------------------------------------ the clock in the corner, from "Decide" to the answer
-  // It stops, and goes, for the officer's beat: nothing ticks over her.
-  const HUSH = [ITEM[2], TEST];
+  // ------------------------------------------------------------------ the clock in the corner, from "Decide" to the last word
+  // Time runs out on "man", so "Decide before the end" means the end of the reel. A red wedge fills as it runs, so it reads
+  // at phone size. It stops, and goes, for the officer's beat: nothing ticks over her.
+  const HUSH = [BLANK, TEST], CLOCK1 = MANCUT;
   const run = (x) => Math.max(0, Math.min(x, HUSH[0]) - DECIDE) + Math.max(0, x - HUSH[1]);   // the clock's own time, without the hush
   function clock(t) {
-    if (t < DECIDE - 0.05 || t >= ANS || (t >= HUSH[0] && t < HUSH[1])) return;
-    const cx = 884, cy = 316, r = 42;
-    for (let i = 0; i < 12; i++) { const a = i * Math.PI / 6; ink([[cx + Math.cos(a) * (r - 14), cy + Math.sin(a) * (r - 14)], [cx + Math.cos(a) * (r - 6), cy + Math.sin(a) * (r - 6)]], 4); }
-    ink(oval(cx, cy, r, r, 30), 6);
-    const a = -Math.PI / 2 + Math.PI * 2 * Math.min(1, run(t) / run(ANS));
-    ink([[cx, cy], [cx + Math.cos(a) * (r - 10), cy + Math.sin(a) * (r - 10)]], 7, 'red');
+    if (t < DECIDE - 0.05 || t >= CLOCK1 || (t >= HUSH[0] && t < HUSH[1])) return;
+    const cx = 876, cy = 330, r = 60, a = -Math.PI / 2 + Math.PI * 2 * Math.min(1, run(t) / run(CLOCK1)), gr = L.red.g;
+    gr.save(); gr.fillStyle = '#000'; gr.beginPath(); gr.moveTo(cx, cy); gr.arc(cx, cy, r - 12, -Math.PI / 2, Math.max(-Math.PI / 2 + 0.01, a)); gr.closePath(); gr.fill(); gr.restore();
+    for (let i = 0; i < 12; i++) { const b = i * Math.PI / 6; ink([[cx + Math.cos(b) * (r - 18), cy + Math.sin(b) * (r - 18)], [cx + Math.cos(b) * (r - 8), cy + Math.sin(b) * (r - 8)]], 5); }
+    ink(oval(cx, cy, r, r, 36), 8);
+    ink([[cx, cy], [cx + Math.cos(a) * (r - 14), cy + Math.sin(a) * (r - 14)]], 9);
   }
 
   // ------------------------------------------------------------------ the map: forty scenes, no borders
@@ -198,7 +212,7 @@
     return [c[0] + (rs('dx', i) + rs('ex', i)) * 0.5 * c[2], c[1] + (rs('dy', i) + rs('ey', i)) * 0.5 * c[3]];
   });
   function map(t, pass) {
-    const n = Math.min(40, Math.max(0, Math.floor((t - MAP - 0.15) / 0.03) + 1));
+    const n = Math.min(40, Math.floor((t - MAP) / 0.03) + 1);       // from 1: a "0" showed for four frames
     for (let i = 0; i < n; i++) shape('red', oval(DOTS[i][0], DOTS[i][1], 14, 14, 10), `dot${i}${pass}`, 1, 6);
     type('GERMANY', 540, 620, 42); type('AUSTRIA', 810, 1270, 42); type('FRANCE', 250, 1240, 42);
     type(String(n), 505, 440, 160, 'ink', BIG); type(n === 1 ? 'CRIME SCENE' : 'CRIME SCENES', 505, 515, 56);
@@ -209,10 +223,17 @@
   function testCard(letter, text, y) {
     const w = 820, h = 150;
     shape('ink', box(505, y, w + 12, h + 12), `card${letter}`, 1.2, 10); hole(box(505, y, w, h));
-    shape('ink', oval(180, y, 50, 50, 22), `cl${letter}`, 1); typeCut(letter, 180, y + 22, 64);
-    type(text, 250, y + 18, 50, 'ink', FELL, 'left');
+    shape('ink', oval(180, y, 50, 50, 22), `cl${letter}`, 1); typeCut(letter, 180, y + 21, 60, BIG);
+    type(text, 264, y + 25, 72, 'ink', BIG, 'left');
   }
-  const tick = (x, y) => ink([[x - 30, y], [x - 8, y + 24], [x + 34, y - 30]], 12, 'red');
+  // The police's picks are circled in black, the way a pen marks a choice. A tick reads as "right", and muted viewers
+  // took the ticks for the answer key.
+  function ring(t, t0, y) {
+    if (t < t0) return;
+    const f = ease(seg(t, t0, t0 + 0.28)), pts = [];
+    for (let k = 0; k <= Math.round(40 * f); k++) { const a = Math.PI * 0.8 + (Math.PI * 2 + 0.5) * k / 40, w = 1 + 0.05 * Math.sin(a * 3 + y); pts.push([180 + Math.cos(a) * 64 * w, y + Math.sin(a) * 62 * w]); }
+    if (pts.length > 1) ink(pts, 9);
+  }
 
   LAB.film({
     draw(g, t) {
@@ -224,26 +245,35 @@
       else if (t < EVID) {                                           // the title, over a close-up of her empty face
         view(pop(t, TITLE), 505, 1200, 505, 1200, () => woman(505, 1180, 3.0, pass));
         type('THE WOMAN', 505, 450, 92); type('WITHOUT A FACE', 505, 545, 92);
-      } else if (t < ITEM[0]) {                                      // here's where her DNA turned up
-        view(pop(t, EVID), 505, 920, 505, 920, () => helix(505, 920, 1.6));
+      } else if (t < ITEM[0]) {                                      // here's where her DNA turned up: the helix turns
+        view(pop(t, EVID), 505, 920, 505, 920, () => helix(505, 920, 1.6, Math.PI * (t - EVID)));
         type('HER DNA', 505, 420, 96);
-      } else if (t < TEST) {                                         // a cookie, a toy pistol; then the officer, still and apart
-        const i = ITEM.filter((x) => t >= x).length - 1, still = i === 2;
-        const draw = [cookie, pistol, badge][i], label = ['BREAK-IN', 'ROBBERY · FRANCE', 'POLICE OFFICER · 2007'][i];
-        view(still ? 1 : pop(t, ITEM[i]), 505, 940, 505, 940, () => draw(505, 940, 1.6, pass));
-        if (!still || t >= OFFTAG) tag(label, 505, 1330, still ? 46 : 52, still ? NUM : FELL);
-        if (!still) stamp(t, ITEM[i] + 0.12);
-      } else if (t < WIT) {                                          // so who is she? the cards; then the police's answer
-        if (t < ANS) type('WHO IS SHE?', 505, 440, 92); else type('POLICE BELIEVED:', 505, 420, 80);
+      } else if (t < BLANK) {                                        // a cookie, a toy pistol: each lands before its line, its tag on its word
+        const i = t >= ITEM[1] ? 1 : 0;
+        view(pop(t, ITEM[i]), 505, 940, 505, 940, () => [cookie, pistol][i](505, 940, 1.6, pass));
+        if (t >= TAGT[i]) tag(['BREAK-IN', 'TOY PISTOL'][i], 505, 1330, 52);
+        stamp(t, ITEM[i] + 0.12);
+      } else if (t < TEST) {                                         // the officer: bare paper first, then a small badge, still, and
+        if (t >= BADGE) {                                            // plain type on her words. Nothing here looks like the evidence.
+          badge(505, 1000, 1.1, pass);
+          if (t >= OFFTAG) type('POLICE OFFICER · 2007', 505, 1330, 46, 'ink', NUM);
+        }
+      } else if (t < WIT) {                                          // so who is she? the cards; then the police's picks, circled
+        if (t < ANS) type('WHO IS SHE?', 505, 505, 92); else type('POLICE BELIEVED:', 505, 505, 80);
         const cards = [['A', 'KILLER', 780], ['B', 'THIEF', 980], ['C', 'SOMETHING ELSE', 1180]];
         cards.forEach(([l, s, y]) => testCard(l, s, y));
-        TICK.forEach((x, i) => { if (t >= x) tick(870, cards[i][2]); });
+        ring(t, BOTH, 780); ring(t, BOTH + 0.12, 980);
         if (t >= QMARK) { const sc = pop(t, QMARK, 0.2); const gr = L.red.g; gr.save(); gr.translate(872, 1180); gr.scale(sc, sc); gr.fillStyle = '#000'; gr.font = FELL.replace('%', 104); gr.textAlign = 'center'; gr.fillText('?', 0, 36); gr.restore(); }
-      } else if (t < MANCUT) {                                       // but the people who saw her?
-        view(1 + 0.08 * seg(t, WIT, MANCUT), 505, 1000, 505, 1000, () => woman(505, 1120, 2.3, pass));
-      } else {                                                       // some said she looked like a man: the cut lands on "man"
-        view(1.08, 505, 1000, 505, 1000, () => man(505, 1120, 2.3, pass));
-        if (t >= NEXT) { type('PART 2', 505, 420, 84, 'red', NUM); type('THE HUNT', 505, 505, 64); }
+      } else {                                                       // the DNA said a woman; some witnesses said a man (on "man")
+        view(1 + 0.03 * seg(t, WIT, NEXT + 1), 505, 1030, 505, 1030, () => {
+          woman(280, 1030, 1.2, pass);
+          if (t >= MANCUT) man(730, 1030, 1.2, pass);
+        });
+        type('THE DNA:', 280, 470, 50); type('A WOMAN', 280, 575, 96, 'ink', BIG);
+        if (t >= WITR) type('SOME WITNESSES:', 730, 470, 46);
+        if (t >= MANCUT) type('A MAN', 730, 575, 96, 'ink', BIG);
+        else if (t >= WITR) { const gr = L.red.g, sc = pop(t, WITR, 0.15); gr.save(); gr.translate(730, 1180); gr.scale(sc, sc); gr.fillStyle = '#000'; gr.font = FELL.replace('%', 300); gr.textAlign = 'center'; gr.fillText('?', 0, 0); gr.restore(); }
+        if (t >= NEXT) type('PART 2 · THE HUNT', 505, 372, 64, 'red', NUM);
       }
       clock(t);
       print(g, pass);
