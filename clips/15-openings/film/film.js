@@ -104,6 +104,9 @@
   }
 
   // ------------------------------------------------------------------ A · she's in every picture
+  // Every print is kept to a similar middle tone (dark areas hatched with carved lines) so the cuts between them never
+  // flash the whole frame.
+  function hatch(x0, y0, x1, y1, key) { shape('ink', [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], key, 1.5); for (let y = y0 + 9; y < y1; y += 18) cut(LAB.resample([[x0, y], [x1, y + 4]], 8), 8); }
   function photo(n, pass, scene, rot) {                            // a crime-scene print: paper, an inked edge, a tag (tilted on top of any outer view)
     for (const k of ['ink', 'red']) { const g = L[k].g; g.save(); g.translate(505, 960); g.rotate(rot); g.translate(-505, -960); }
     try {
@@ -116,23 +119,23 @@
   }
   function drawA(t, S, pass) {
     const u = t - S.t0, n = Math.min(3, Math.floor(u / 0.62));
-    const q = ease(seg(t, T0(S.q) - 0.15, T0(S.q) + 0.2)), sc = pop(t, S.t0 + n * 0.62, 0.06) * (1 - 0.26 * q);
-    view(sc, 505, 960, 505, 960 + 230 * q, () => photo(n, pass, [
+    const sc = pop(t, S.t0 + n * 0.62, 0.06) * 0.9;                // one size throughout, low enough that the question fits above
+    view(sc, 505, 960, 505, 1070, () => photo(n, pass, [
       () => {                                                      // 1: a room, a cup on the table; she stands in the doorway
-        shape('ink', [[105, 470], [905, 470], [905, 920], [105, 920]], `aw1${pass}`, 1.5); hole([[540, 500], [840, 500], [840, 920], [540, 920]]);
+        hatch(105, 470, 905, 920, `aw1${pass}`); hole([[540, 500], [840, 500], [840, 920], [540, 920]]);
         woman(690, 750, 0.85, pass);
         shape('ink', [[150, 1090], [860, 1090], [860, 1120], [150, 1120]], `at1${pass}`, 1.5);
         for (const x of [190, 820]) shape('ink', [[x - 12, 1120], [x + 12, 1120], [x + 12, 1440], [x - 12, 1440]], `al${x}${pass}`, 1);
         cup(420, 1010, 0.45, pass);
       },
       () => {                                                      // 2: a forced door, the cookie; she's outside, far off
-        shape('ink', [[105, 470], [905, 470], [905, 1450], [105, 1450]], `aw2${pass}`, 1.5); hole([[250, 560], [760, 560], [760, 1180], [250, 1180]]);
+        hatch(105, 470, 905, 1450, `aw2${pass}`); hole([[250, 560], [760, 560], [760, 1180], [250, 1180]]);
         for (const [a, b] of [[[250, 760], [430, 700]], [[430, 700], [520, 820]], [[430, 700], [470, 560]]]) ink([a, b], 6);
         woman(560, 960, 0.68, pass);
         shape('ink', [[200, 1180], [810, 1180], [810, 1215], [200, 1215]], `as2${pass}`, 1.2); cookie(330, 1140, 0.28, pass);
       },
       () => {                                                      // 3: a car, its door open; she stands under the lamp
-        shape('ink', [[105, 470], [905, 470], [905, 1450], [105, 1450]], `aw3${pass}`, 1.5);
+        hatch(105, 470, 905, 1450, `aw3${pass}`);
         hole([[700, 560], [600, 1300], [880, 1300], [800, 560]]);                                         // the lamp's light
         shape('ink', [[742, 480], [758, 480], [758, 1300], [742, 1300]], `apo${pass}`, 1);
         woman(750, 1020, 0.62, pass);
@@ -140,7 +143,8 @@
         car(360, 1280, 0.7, pass);
       },
       () => {                                                      // 4: police tape; she's close, facing you
-        woman(505, 1000, 1.7, pass);
+        hatch(105, 470, 905, 1450, `aw4${pass}`);
+        woman(505, 1040, 1.45, pass);
         for (const [y, r] of [[700, -0.18], [1250, 0.14]]) { const g = L.red.g; g.save(); g.translate(505, y); g.rotate(r); g.fillStyle = '#000'; g.fillRect(-560, -34, 1120, 68); g.restore(); }
       },
     ][n], [-0.02, 0.025, -0.03, 0.01][n]));
