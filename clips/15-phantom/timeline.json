@@ -1,6 +1,6 @@
 {
-  "title": "The Woman Without a Face: three openings",
-  "duration": 26.0,
+  "title": "The Woman Without a Face",
+  "duration": 35.5,
   "fps": 30,
   "bpm": 120,
   "formats": [
@@ -9,8 +9,8 @@
   "loop": false,
   "marks": {
     "hook": 0,
-    "end": 50.0,
-    "done": 52.0
+    "end": 69.0,
+    "done": 71.0
   },
   "mix": {
     "music": -7,
