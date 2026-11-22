@@ -50,7 +50,7 @@
     const right = [[88, 24], [100, 92], [114, 162], [90, 180], [72, 112], [64, 40], [60, -22]];
     const left = [[-60, -22], [-64, 40], [-72, 112], [-90, 180], [-114, 162], [-100, 92], [-88, 24]];
     if (face === 'block') shape('ink', P(oval(0, 8, 64, 86, 30)), `wface${k}`, 1.2);   // the uncarved block: a face of solid ink
-    else ink(P(oval(0, 8, 64, 86, 30)), 5 * s);
+    else { hole(P(oval(0, 8, 64, 86, 30))); ink(P(oval(0, 8, 64, 86, 30)), 5 * s); }   // a paper face hides what's behind it
     shape('ink', P([...crown, ...right, [40, -56], [0, -64], [-40, -56], ...left]), `whair${k}`, 2.5);
     cut(LAB.resample(P([[-16, -114], [-10, -70]]), 6), 4 * s + 1);
     for (const sx of [-1, 1]) for (let j = 0; j < 3; j++) cut(LAB.resample(P([[sx * (66 + j * 9), -40 + j * 8], [sx * (80 + j * 8), 50], [sx * (92 + j * 6), 150]]), 6), 3 * s + 1);
@@ -119,8 +119,8 @@
     const q = ease(seg(t, T0(S.q) - 0.15, T0(S.q) + 0.2)), sc = pop(t, S.t0 + n * 0.62, 0.06) * (1 - 0.26 * q);
     view(sc, 505, 960, 505, 960 + 230 * q, () => photo(n, pass, [
       () => {                                                      // 1: a room, a cup on the table; she stands in the doorway
-        shape('ink', [[105, 470], [905, 470], [905, 900], [105, 900]], `aw1${pass}`, 1.5); hole([[600, 520], [780, 520], [780, 900], [600, 900]]);
-        woman(690, 760, 0.62, pass);
+        shape('ink', [[105, 470], [905, 470], [905, 920], [105, 920]], `aw1${pass}`, 1.5); hole([[540, 500], [840, 500], [840, 920], [540, 920]]);
+        woman(690, 750, 0.85, pass);
         shape('ink', [[150, 1090], [860, 1090], [860, 1120], [150, 1120]], `at1${pass}`, 1.5);
         for (const x of [190, 820]) shape('ink', [[x - 12, 1120], [x + 12, 1120], [x + 12, 1440], [x - 12, 1440]], `al${x}${pass}`, 1);
         cup(420, 1010, 0.45, pass);
@@ -128,14 +128,14 @@
       () => {                                                      // 2: a forced door, the cookie; she's outside, far off
         shape('ink', [[105, 470], [905, 470], [905, 1450], [105, 1450]], `aw2${pass}`, 1.5); hole([[250, 560], [760, 560], [760, 1180], [250, 1180]]);
         for (const [a, b] of [[[250, 760], [430, 700]], [[430, 700], [520, 820]], [[430, 700], [470, 560]]]) ink([a, b], 6);
-        woman(560, 1010, 0.5, pass);
+        woman(560, 960, 0.68, pass);
         shape('ink', [[200, 1180], [810, 1180], [810, 1215], [200, 1215]], `as2${pass}`, 1.2); cookie(330, 1140, 0.28, pass);
       },
       () => {                                                      // 3: a car, its door open; she stands under the lamp
         shape('ink', [[105, 470], [905, 470], [905, 1450], [105, 1450]], `aw3${pass}`, 1.5);
         hole([[700, 560], [600, 1300], [880, 1300], [800, 560]]);                                         // the lamp's light
         shape('ink', [[742, 480], [758, 480], [758, 1300], [742, 1300]], `apo${pass}`, 1);
-        woman(750, 1060, 0.48, pass);
+        woman(750, 1020, 0.62, pass);
         hole([[105, 1300], [905, 1300], [905, 1450], [105, 1450]]);
         car(360, 1280, 0.7, pass);
       },
@@ -144,7 +144,7 @@
         for (const [y, r] of [[700, -0.18], [1250, 0.14]]) { const g = L.red.g; g.save(); g.translate(505, y); g.rotate(r); g.fillStyle = '#000'; g.fillRect(-560, -34, 1120, 68); g.restore(); }
       },
     ][n], [-0.02, 0.025, -0.03, 0.01][n]));
-    if (t >= T0(S.q) - 0.1) question(t, S, pass);
+    if (t >= T0(S.q) - 0.1) question(t, S, pass); else type('40 CRIME SCENES.', 505, 405, 84, 'ink', BIG);   // the claim, on frame 0
   }
 
   // ------------------------------------------------------------------ B · the stamp storm
