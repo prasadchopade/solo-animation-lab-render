@@ -1,0 +1,38 @@
+{
+ "note": "Lab clip 15's opening prototypes (22 Nov, HQ relaying the user: make the first 2-3 seconds something special). A: she's in every picture. B: the stamp storm. C: the face that won't carve. Each opening line is followed by the same test question (qa, qb, qc are the same words, voiced per prototype). Sources: lab/research.md, Round 3.",
+ "take": {
+  "id": "k-heart",
+  "engine": "kokoro",
+  "voice": "af_heart",
+  "speed": 1.0
+ },
+ "ref_text": "The bench outside the stall is warm from the afternoon. A kettle hisses, a cyclist rings his bell, and somebody laughs at the next table.",
+ "cast": [],
+ "cast_lines": [],
+ "lines": [
+  {
+   "id": "a01",
+   "text": "Her DNA was at forty crime scenes."
+  },
+  {
+   "id": "qa",
+   "text": "Killer, thief, or something else? Decide before the end."
+  },
+  {
+   "id": "b01",
+   "text": "A murder. A cookie. A toy gun. Same DNA."
+  },
+  {
+   "id": "qb",
+   "text": "Killer, thief, or something else? Decide before the end."
+  },
+  {
+   "id": "c01",
+   "text": "Forty crimes. Her DNA. No face."
+  },
+  {
+   "id": "qc",
+   "text": "Killer, thief, or something else? Decide before the end."
+  }
+ ]
+}
