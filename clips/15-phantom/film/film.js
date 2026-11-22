@@ -62,11 +62,12 @@
     cut(LAB.resample(P([[-16, -114], [-10, -70]]), 6), 4 * s + 1);
     for (const sx of [-1, 1]) for (let j = 0; j < 3; j++) cut(LAB.resample(P([[sx * (66 + j * 9), -40 + j * 8], [sx * (80 + j * 8), 50], [sx * (92 + j * 6), 150]]), 6), 3 * s + 1);
   }
-  function man(cx, cy, s, pass) {
-    const P = (a) => a.map(([x, y]) => [cx + x * s, cy + y * s]), k = 'm' + pass;
+  function man(cx, cy, s, pass) {                                    // short hair, a squarer jaw, ears of paper with an ink edge
+    const P = (a) => a.map(([x, y]) => [cx + x * s, cy + y * s]), k = 'm' + pass;   // (solid ears read as headphones)
     shape('ink', P([[-178, 330], [-170, 178], [-126, 130], [-58, 114], [0, 182], [58, 114], [126, 130], [170, 178], [178, 330]]), `mcoat${k}`, 2);
-    for (const sx of [-1, 1]) shape('ink', P(oval(sx * 70, 14, 16, 26, 14)), `mear${sx}${k}`, 1);   // ears, solid, behind the face
-    hole(P(oval(0, 8, 64, 86, 30))); ink(P(oval(0, 8, 64, 86, 30)), 5 * s);
+    const face = Array.from({ length: 33 }, (_, j) => { const a = j / 32 * Math.PI * 2, c = Math.cos(a), n = Math.sin(a); return [Math.sign(c) * Math.pow(Math.abs(c), 0.7) * 64, 8 + Math.sign(n) * Math.pow(Math.abs(n), n > 0 ? 0.6 : 0.9) * 86]; });
+    for (const sx of [-1, 1]) { const ear = oval(sx * 68, 16, 14, 24, 14); hole(P(ear)); ink(P(ear), 4 * s); }
+    hole(P(face)); ink(P(face), 5 * s);
     shape('ink', P([...oval(0, -4, 70, 94, 18, Math.PI * 1.02, Math.PI * 1.98), [70, -20], [58, -48], [0, -58], [-58, -48], [-70, -20]]), `mhair${k}`, 2);
   }
 
@@ -140,8 +141,10 @@
     },
     14: (pass) => {                                                // a forced window, the cookie on the sill; she's outside
       hatch(105, 470, 905, 1450, `aw2${pass}`); hole([[500, 600], [880, 600], [880, 1120], [500, 1120]]);
-      for (let j = 0; j < 7; j++) { const a = 0.15 + j * 0.9, r = 70 + 22 * (j % 3); ink([[548, 652], [548 + Math.cos(a) * r, 652 + Math.sin(a) * r]], 5); }   // a spider-web crack in the
-      for (const r of [24, 46]) ink(oval(548, 652, r, r * 0.9, 9).map(([x, y], j) => [x + (j % 2 ? 4 : -3), y]), 4);   // corner, clear of her head
+      ink([[600, 600], [600, 1120]], 10); ink([[500, 760], [880, 760]], 10);                       // four panes, the bars clear of her face;
+      for (const [x, y] of [[522, 646], [640, 640], [690, 652]]) ink([[x, y + 28], [x + 28, y]], 4);   // glare on the whole ones;
+      for (const q of [[[504, 766], [566, 766], [526, 798], [534, 826], [504, 838]], [[596, 766], [596, 860], [578, 818], [562, 792]], [[504, 960], [536, 984], [504, 1004]]]) ink([...q, q[0]], 4);   // the pane by the
+      shape('ink', [[506, 900], [528, 900], [528, 930], [506, 930]], `alatch${pass}`, 1);          // latch smashed, shards left in its frame (a spider-web read as a bullet hole)
       woman(SPOT[0], SPOT[1] + 20, SS, pass);
       shape('ink', [[470, 1120], [905, 1120], [905, 1150], [470, 1150]], `as2${pass}`, 1.2); cookie(560, 1085, 0.24, pass);
     },
@@ -185,11 +188,11 @@
   }
   function opening(t, pass) {
     let i = 0; while (i + 1 < CUTS.length && t >= CUTS[i + 1][1]) i++;
-    const [n, c] = CUTS[i], z = 0.9 * pop(t, c, 0.05) * (1 + 0.008 * (t - c));   // each print lands, then creeps in
-    const zin = i === CUTS.length - 1 ? 1 + 0.3 * ease(seg(t, SWAP, MAP)) : 1;    // while the test is asked, the view closes in on her face
+    const last = i === CUTS.length - 1, [n, c] = CUTS[i], z = 0.9 * pop(t, c, 0.05) * (1 + 0.008 * ((last ? Math.min(t, SWAP) : t) - c));   // each print lands, then creeps in
+    const zin = last ? 1 + 0.3 * ease(seg(t, SWAP, MAP)) : 1;                     // while the test is asked, the view closes in on her face
     view(z, 505, 960, 505, 1056, () => photo(n, pass, { 1: -0.02, 14: 0.025, 27: -0.03, 40: 0.01 }[n], zin));
     if (t < SWAP) { type('40', 505, 445, 200, 'ink', BIG); type('CRIME SCENES.', 505, 545, 92, 'ink', BIG); }   // the claim: the biggest thing on frame 0
-    else OPTS.forEach(([l, s, w], k) => { const t0 = k ? word('qa', w) - 0.05 : SWAP; if (t >= t0) option(l, s, 380 + k * 88, pop(t, t0, 0.15)); });
+    else OPTS.forEach(([l, s, w], k) => { const t0 = k ? word('qa', w) - 0.05 : SWAP; if (t >= t0) option(l, s, 372 + k * 88, pop(t, t0, 0.15)); });
   }
 
   // ------------------------------------------------------------------ the clock in the corner, from "Decide" to the last word
@@ -199,7 +202,7 @@
   const run = (x) => Math.max(0, Math.min(x, HUSH[0]) - DECIDE) + Math.max(0, x - HUSH[1]);   // the clock's own time, without the hush
   function clock(t) {
     if (t < DECIDE - 0.05 || t >= CLOCK1 || (t >= HUSH[0] && t < HUSH[1])) return;
-    const cx = 876, cy = 330, r = 60, a = -Math.PI / 2 + Math.PI * 2 * Math.min(1, run(t) / run(CLOCK1)), gr = L.red.g;
+    const cx = 876, cy = 342, r = 60, a = -Math.PI / 2 + Math.PI * 2 * Math.min(1, run(t) / run(CLOCK1)), gr = L.red.g;
     gr.save(); gr.fillStyle = '#000'; gr.beginPath(); gr.moveTo(cx, cy); gr.arc(cx, cy, r - 12, -Math.PI / 2, Math.max(-Math.PI / 2 + 0.01, a)); gr.closePath(); gr.fill(); gr.restore();
     for (let i = 0; i < 12; i++) { const b = i * Math.PI / 6; ink([[cx + Math.cos(b) * (r - 18), cy + Math.sin(b) * (r - 18)], [cx + Math.cos(b) * (r - 8), cy + Math.sin(b) * (r - 8)]], 5); }
     ink(oval(cx, cy, r, r, 36), 8);
@@ -228,11 +231,12 @@
   }
   // The police's picks are circled in black, the way a pen marks a choice. A tick reads as "right", and muted viewers
   // took the ticks for the answer key.
-  function ring(t, t0, y) {
-    if (t < t0) return;
-    const f = ease(seg(t, t0, t0 + 0.28)), pts = [];
-    for (let k = 0; k <= Math.round(40 * f); k++) { const a = Math.PI * 0.8 + (Math.PI * 2 + 0.5) * k / 40, w = 1 + 0.05 * Math.sin(a * 3 + y); pts.push([180 + Math.cos(a) * 64 * w, y + Math.sin(a) * 62 * w]); }
-    if (pts.length > 1) ink(pts, 9);
+  function ring(t, t0, y, text) {                                  // a thick loop round the whole answer, breaking the card's edge:
+    if (t < t0) return;                                              // thin rings round the letter discs vanished at phone size
+    const w = measure(text, 72, BIG), cx = (122 + 272 + w) / 2, rx = (150 + w) / 2 + 26, ry = 92;
+    const f = ease(seg(t, t0, t0 + 0.3)), pts = [];
+    for (let k = 0; k <= Math.round(48 * f); k++) { const a = Math.PI * 0.75 + (Math.PI * 2 + 0.45) * k / 48, q = 1 + 0.04 * Math.sin(a * 3 + y); pts.push([cx + Math.cos(a) * rx * q, y + Math.sin(a) * ry * q]); }
+    if (pts.length > 1) ink(pts, 15);
   }
 
   LAB.film({
@@ -244,7 +248,7 @@
       else if (t < TITLE) map(t, pass);                              // three countries, sixteen years
       else if (t < EVID) {                                           // the title, over a close-up of her empty face
         view(pop(t, TITLE), 505, 1200, 505, 1200, () => woman(505, 1180, 3.0, pass));
-        type('THE WOMAN', 505, 450, 92); type('WITHOUT A FACE', 505, 545, 92);
+        type('THE WOMAN', 505, 510, 92); type('WITHOUT A FACE', 505, 605, 92);
       } else if (t < ITEM[0]) {                                      // here's where her DNA turned up: the helix turns
         view(pop(t, EVID), 505, 920, 505, 920, () => helix(505, 920, 1.6, Math.PI * (t - EVID)));
         type('HER DNA', 505, 420, 96);
@@ -253,25 +257,30 @@
         view(pop(t, ITEM[i]), 505, 940, 505, 940, () => [cookie, pistol][i](505, 940, 1.6, pass));
         if (t >= TAGT[i]) tag(['BREAK-IN', 'TOY PISTOL'][i], 505, 1330, 52);
         stamp(t, ITEM[i] + 0.12);
-      } else if (t < TEST) {                                         // the officer: bare paper first, then a small badge, still, and
-        if (t >= BADGE) {                                            // plain type on her words. Nothing here looks like the evidence.
-          badge(505, 1000, 1.1, pass);
-          if (t >= OFFTAG) type('POLICE OFFICER · 2007', 505, 1330, 46, 'ink', NUM);
-        }
+      } else if (t < TEST) {                                         // the officer: an empty frame first (the picture we never show; bare
+        shape('ink', box(505, 1000, 600, 680), `mf${pass}`, 1.2, 10); hole(box(505, 1000, 572, 652));   // paper read as a frozen video),
+        if (t >= BADGE) badge(505, 1000, 1.05, pass);               // then a small badge in it, still, and plain type on her words.
+        if (t >= OFFTAG) type('POLICE OFFICER · 2007', 505, 1420, 46, 'ink', NUM);   // Nothing here looks like the evidence.
       } else if (t < WIT) {                                          // so who is she? the cards; then the police's picks, circled
         if (t < ANS) type('WHO IS SHE?', 505, 505, 92); else type('POLICE BELIEVED:', 505, 505, 80);
         const cards = [['A', 'KILLER', 780], ['B', 'THIEF', 980], ['C', 'SOMETHING ELSE', 1180]];
-        cards.forEach(([l, s, y]) => testCard(l, s, y));
-        ring(t, BOTH, 780); ring(t, BOTH + 0.12, 980);
-        if (t >= QMARK) { const sc = pop(t, QMARK, 0.2); const gr = L.red.g; gr.save(); gr.translate(872, 1180); gr.scale(sc, sc); gr.fillStyle = '#000'; gr.font = FELL.replace('%', 104); gr.textAlign = 'center'; gr.fillText('?', 0, 36); gr.restore(); }
-      } else {                                                       // the DNA said a woman; some witnesses said a man (on "man")
+        view(1 + 0.035 * seg(t, TEST, WIT), 505, 980, 505, 980, () => {   // the cards land one by one, then creep in
+          cards.forEach(([l, s, y], k) => {
+            const t0 = TEST + 0.1 * k, gi = L.ink.g, sc = pop(t, t0, 0.1);
+            if (t < t0) return;
+            gi.save(); gi.translate(505, y); gi.scale(sc, sc); gi.translate(-505, -y); testCard(l, s, y); gi.restore();
+          });
+          ring(t, BOTH, 780, 'KILLER'); ring(t, BOTH + 0.12, 980, 'THIEF');
+          if (t >= QMARK) { const sc = pop(t, QMARK, 0.2); const gr = L.red.g; gr.save(); gr.translate(872, 1180); gr.scale(sc, sc); gr.fillStyle = '#000'; gr.font = FELL.replace('%', 104); gr.textAlign = 'center'; gr.fillText('?', 0, 36); gr.restore(); }
+        });
+      } else {                                                       // the DNA: a woman; some witnesses: like a man (on "man")
         view(1 + 0.03 * seg(t, WIT, NEXT + 1), 505, 1030, 505, 1030, () => {
           woman(280, 1030, 1.2, pass);
           if (t >= MANCUT) man(730, 1030, 1.2, pass);
         });
-        type('THE DNA:', 280, 470, 50); type('A WOMAN', 280, 575, 96, 'ink', BIG);
-        if (t >= WITR) type('SOME WITNESSES:', 730, 470, 46);
-        if (t >= MANCUT) type('A MAN', 730, 575, 96, 'ink', BIG);
+        type('THE DNA:', 280, 495, 50); type('A WOMAN', 280, 600, 84, 'ink', BIG);
+        if (t >= WITR) type('SOME WITNESSES:', 730, 495, 46);
+        if (t >= MANCUT) type('LIKE A MAN', 730, 600, 84, 'ink', BIG);   // Time: they "sometimes said she looked like a man"
         else if (t >= WITR) { const gr = L.red.g, sc = pop(t, WITR, 0.15); gr.save(); gr.translate(730, 1180); gr.scale(sc, sc); gr.fillStyle = '#000'; gr.font = FELL.replace('%', 300); gr.textAlign = 'center'; gr.fillText('?', 0, 0); gr.restore(); }
         if (t >= NEXT) type('PART 2 · THE HUNT', 505, 372, 64, 'red', NUM);
       }
