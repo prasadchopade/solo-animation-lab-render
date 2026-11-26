@@ -23,7 +23,7 @@ const word = (id, w, frac) => { const x = WORDS.find((q) => q.p === id && norm(q
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const seg = (t, a, b) => clamp((t - a) / (b - a));
 const ss = (k) => k * k * (3 - 2 * k);
-const DAWN0 = T0('l03') - 0.45, DAWN1 = DAWN0 + 1.6;              // the light turns on the story's turn
+const DAWN0 = T0('l03') - 0.7, DAWN1 = DAWN0 + 1.6;               // the light turns on the story's turn (a beat early: it fills the dark of the turn, which flashed)
 const BLAME = word('l05', 'blames', 0.3), PAST = word('l06', 'past', 0.85);
 
 // a smooth, monotone curve through (xs, ys) (Fritsch-Carlson); it comes to rest at the last point
@@ -47,7 +47,7 @@ let st, cam, sun, hemi, skyMat, capG, ENV, clouds = [], lamps = [], lanterns = [
 const look = new THREE.Vector3();
 
 function build(root) {
-  st = stage(root, { bg: 0x101a36, fog: { color: 0x101a36, density: 0.02 }, fov: 60, exposure: 1.1, bloom: { strength: 0.55, radius: 0.5, threshold: 0.85 }, finish: true });
+  st = stage(root, { bg: 0x101a36, fog: { color: 0x101a36, density: 0.02 }, fov: 60, exposure: 1.1, bloom: { strength: 0.42, radius: 0.5, threshold: 0.9 }, finish: true });
   const { renderer, scene, camera } = st;
   cam = camera;
   ENV = envGradient(renderer, '#9cc3f2', '#e9c9a0', [[0.36, 0.46, 0.07, '#fff3d6']]);   // a morning sky, only for wet things to reflect
@@ -81,7 +81,7 @@ function build(root) {
   trail.rotation.x = -Math.PI / 2; trail.position.set(2.9, 0.004, -22.5); scene.add(trail); trail.receiveShadow = true;   // the sweeper's wet track, by morning
 
   // the houses: a terrace on each side, each its own colour, door and number
-  const paneLit = new THREE.MeshStandardMaterial({ color: '#2a3447', roughness: 0.12, metalness: 0.5, emissive: '#ffbf74', emissiveIntensity: 1.1 });
+  const paneLit = new THREE.MeshStandardMaterial({ color: '#2a3447', roughness: 0.12, metalness: 0.5, emissive: '#ffbf74', emissiveIntensity: 0.65 });
   const paneDark = new THREE.MeshStandardMaterial({ color: '#232c3c', roughness: 0.12, metalness: 0.5 });
   panes.push(paneLit);
   const white = std('#f3efe6'), slate = std('#ffffff', { map: tiles }), pot = std('#b4643f');
@@ -132,7 +132,7 @@ function build(root) {
     box(0.5, 0.12, 0.5, green, x, 4.5, z);
     const lm = new THREE.MeshStandardMaterial({ color: '#fff1d6', emissive: '#ffcf8f', emissiveIntensity: 6 }); lanterns.push(lm);
     const head = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.4, 0.32), lm); head.position.set(x, 4.25, z); add(head, false, false);
-    const pl = new THREE.PointLight('#ffb56b', 20, 0, 2); pl.position.set(x, 4.05, z); scene.add(pl); lamps.push(pl);
+    const pl = new THREE.PointLight('#ffb56b', 13, 0, 2); pl.position.set(x, 4.05, z); scene.add(pl); lamps.push(pl);
   }
   for (const [x, z, c] of [[-5.5, -6.0, '#2f5f3a'], [5.5, -15.9, '#3b4a5e'], [-5.4, -27.4, '#2f5f3a']]) box(0.62, 1.05, 0.7, std(c, { roughness: 0.6 }), x, 0.67, z);
   for (const [x, z] of [[5.5, -0.9], [-5.5, -20.6], [5.5, -26.9]]) {
@@ -276,8 +276,8 @@ function captions(g, t) {
 }
 
 // ------------------------------------------------------------------ one frame
-const NIGHTL = { top: '#0b1430', hor: '#22305a', fog: '#141d3d', dens: 0.02, hs: '#4058a0', hg: '#0c0f1c', hi: 0.55, sc: '#9db4ff', si: 0.32, dir: [0.45, 0.85, 0.28], exp: 1.15 };
-const MORNL = { top: '#6fa7ef', hor: '#ffd6a0', fog: '#efd2ad', dens: 0.016, hs: '#a7cbff', hg: '#b38c6a', hi: 1.0, sc: '#ffcf9a', si: 3.6, dir: [-0.55, 0.22, -0.8], exp: 1.0 };
+const NIGHTL = { top: '#0b1430', hor: '#22305a', fog: '#141d3d', dens: 0.02, hs: '#4058a0', hg: '#0c0f1c', hi: 0.72, sc: '#9db4ff', si: 0.32, dir: [0.45, 0.85, 0.28], exp: 1.15 };
+const MORNL = { top: '#6fa7ef', hor: '#ffd6a0', fog: '#efd2ad', dens: 0.016, hs: '#a7cbff', hg: '#b38c6a', hi: 1.2, sc: '#ffcf9a', si: 3.6, dir: [-0.55, 0.22, -0.8], exp: 1.18 };   // brighter than the lit night, so the turn is one rise
 const cA = new THREE.Color(), cB = new THREE.Color(), dA = new THREE.Vector3(), dB = new THREE.Vector3(), tmp = new THREE.Vector3();
 const mixC = (target, a, b, k) => target.copy(cA.set(a)).lerp(cB.set(b), k);
 
@@ -298,9 +298,9 @@ function frame(t) {
   mixC(skyMat.uniforms.uTop.value, N.top, M.top, k); mixC(skyMat.uniforms.uHor.value, N.hor, M.hor, k);
   skyMat.uniforms.uDir.value.copy(L); mixC(skyMat.uniforms.uCol.value, '#c8d6ff', '#ffe2b0', k);
   skyMat.uniforms.uAmt.value = 0.25 + 0.75 * k; skyMat.uniforms.uDisc.value = 1.2 + 4 * k;
-  for (const p of lamps) p.intensity = 20 * (1 - k);
-  for (const m of lanterns) m.emissiveIntensity = 0.25 + 5.75 * (1 - k);
-  for (const m of panes) m.emissiveIntensity = 1.1 * (1 - k) + 0.05;
+  for (const p of lamps) p.intensity = 13 * (1 - k);
+  for (const m of lanterns) m.emissiveIntensity = 0.25 + 3.25 * (1 - k);   // dimmer than they could be: passing close, they flashed the frame
+  for (const m of panes) m.emissiveIntensity = 0.65 * (1 - k) + 0.05;
   const blink = 0.3 + 0.7 * Math.pow(0.5 + 0.5 * Math.sin(t * 2 * Math.PI * 0.9), 3);
   beacon.emissiveIntensity = 6 * blink; glow.material.opacity = blink; beam.intensity = 14 * blink;
   trail.material.opacity = 0.6 * k;
@@ -320,7 +320,7 @@ function frame(t) {
     if (c.swap !== undefined) c.show(t >= c.swap ? 1 : 0);
   }
 
-  st.finish.uniforms.uFrame.value = Math.round(t * 30); st.finish.uniforms.uGrain.value = 0.04; st.finish.uniforms.uVig.value = 0.32;
+  st.finish.uniforms.uFrame.value = Math.round(t * 30); st.finish.uniforms.uGrain.value = 0.02; st.finish.uniforms.uVig.value = 0.32;
   st.render();
   capG.clearRect(0, 0, W, H); captions(capG, t);
 }
