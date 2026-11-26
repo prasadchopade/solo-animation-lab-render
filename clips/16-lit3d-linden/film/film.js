@@ -25,6 +25,8 @@ const seg = (t, a, b) => clamp((t - a) / (b - a));
 const ss = (k) => k * k * (3 - 2 * k);
 const DAWN0 = T0('l03') - 0.7, DAWN1 = DAWN0 + 1.6;               // the light turns on the story's turn (a beat early: it fills the dark of the turn, which flashed)
 const BLAME = word('l05', 'blames', 0.3), PAST = word('l06', 'past', 0.85);
+const GONE = word('l01', 'vanishes', 0.8) + 0.08;                    // the lamp over the bike flickers, and the bike is gone
+const flicker = (t) => (t < GONE || t >= GONE + 0.2 ? 1 : t < GONE + 0.06 ? 0 : t < GONE + 0.1 ? 0.6 : 0);
 
 // a smooth, monotone curve through (xs, ys) (Fritsch-Carlson); it comes to rest at the last point
 function monotone(xs, ys) {
@@ -43,7 +45,7 @@ const DOORS = ['#2f4a7a', '#a8323a', '#2f6b4f', '#d9a531', '#1f2a33', '#6d3f7a',
 const HW = 5;                                                                  // each house 5 m along the street
 const HOUSE = (side, i) => ({ n: side > 0 ? 2 * i + 1 : 2 * i + 2, zc: -3.5 - HW * i, door: -3.5 - HW * i + 1.1 });
 
-let st, cam, sun, hemi, skyMat, capG, ENV, clouds = [], lamps = [], lanterns = [], panes = [], beacon, glow, beam, trail, NIGHT = [], MORNING = [], CARDS = [];
+let st, cam, sun, fill, hemi, skyMat, capG, ENV, clouds = [], lamps = [], lanterns = [], panes = [], beacon, glow, beam, trail, swirls = [], brushes = [], spray, steam = [], bikeNight, NIGHT = [], MORNING = [], CARDS = [];
 const look = new THREE.Vector3();
 
 function build(root) {
@@ -81,9 +83,9 @@ function build(root) {
   trail.rotation.x = -Math.PI / 2; trail.position.set(2.9, 0.004, -22.5); scene.add(trail); trail.receiveShadow = true;   // the sweeper's wet track, by morning
 
   // the houses: a terrace on each side, each its own colour, door and number
-  const paneLit = new THREE.MeshStandardMaterial({ color: '#2a3447', roughness: 0.12, metalness: 0.5, emissive: '#ffbf74', emissiveIntensity: 0.65 });
-  const paneDark = new THREE.MeshStandardMaterial({ color: '#232c3c', roughness: 0.12, metalness: 0.5 });
-  panes.push(paneLit);
+  const paneLit = new THREE.MeshStandardMaterial({ color: '#2a3447', roughness: 0.12, metalness: 0.5, emissive: '#ffbf74', emissiveIntensity: 0.65, envMap: ENV, envMapIntensity: 0.15 });
+  const paneDark = new THREE.MeshStandardMaterial({ color: '#232c3c', roughness: 0.12, metalness: 0.5, envMap: ENV, envMapIntensity: 0.15 });
+  panes.push(paneLit); panes.dark = paneDark;                                   // by morning the glass reflects the sky (black glass read as holes)
   const white = std('#f3efe6'), slate = std('#ffffff', { map: tiles }), pot = std('#b4643f');
   const numTex = (n) => canvasTex(128, 96, (g, w, h) => { g.fillStyle = '#f6f1e6'; g.fillRect(0, 0, w, h); g.fillStyle = '#1b1b1b'; g.font = '700 72px Fredoka, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(n), w / 2, h / 2 + 4); });
   for (const side of [1, -1]) for (let i = 0; i < 7; i++) {
@@ -114,7 +116,7 @@ function build(root) {
   }
   // the corners where the street begins (no numbers: their sides face the next street)
   for (const side of [1, -1]) {
-    box(9, 7.2, 10, std(PAL[side > 0 ? 7 : 2], { map: brick }), side * 10.5, 3.6, 3);
+    box(9, 7.2, 9, std(PAL[side > 0 ? 7 : 2], { map: brick }), side * 10.5, 3.6, 3.5);   // from z -1: no overlap with number 1 and 2 (the overlap flickered)
     for (const wz of [0.6, 4.2]) for (const wy of [1.65, 4.6]) { const p = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 1.4), (wz + wy) % 2 > 1 ? paneLit : paneDark); p.position.set(side * 5.94, wy, wz); p.rotation.y = side > 0 ? -Math.PI / 2 : Math.PI / 2; add(p, false, false); }
   }
   // the end of the street: a terrace facing us across the cross street
@@ -127,7 +129,7 @@ function build(root) {
   }
   // street furniture: lamps, bins, pots, the name plate
   const green = std('#24392e', { roughness: 0.5 });
-  for (const [x, z] of [[-4.3, 0.5], [4.3, -6.0], [-4.3, -15.5], [4.3, -25.5], [-4.3, -33.5]]) {
+  for (const [x, z] of [[-4.3, 0.5], [4.3, -0.9], [-4.3, -15.5], [4.3, -25.5], [-4.3, -33.5]]) {
     box(0.12, 4.3, 0.12, green, x, 2.3, z);
     box(0.5, 0.12, 0.5, green, x, 4.5, z);
     const lm = new THREE.MeshStandardMaterial({ color: '#fff1d6', emissive: '#ffcf8f', emissiveIntensity: 6 }); lanterns.push(lm);
@@ -143,8 +145,8 @@ function build(root) {
     g.fillStyle = '#f7f3ea'; g.fillRect(0, 0, w, h); g.strokeStyle = '#1b1b1b'; g.lineWidth = 10; g.strokeRect(12, 12, w - 24, h - 24);
     g.fillStyle = '#1b1b1b'; g.font = '700 84px Fredoka, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('LINDEN ROW', w / 2, h / 2 + 4);
   }), roughness: 0.6 }));
-  sign.position.set(-3.95, 0.9, 1.3); sign.rotation.y = 0.12; add(sign);
-  for (const dx of [-0.62, 0.62]) box(0.06, 0.75, 0.06, std('#1f2328'), -3.95 + dx * 0.99, 0.45, 1.3 - dx * 0.12);
+  sign.scale.set(0.75, 0.75, 1); sign.position.set(3.6, 1.62, 2.2); sign.rotation.y = -0.34; add(sign);
+  for (const dx of [-0.5, 0.5]) box(0.05, 1.46, 0.05, std('#1f2328'), 3.6 + dx * Math.cos(0.34) - 0.03 * Math.sin(0.34), 0.88, 2.2 + dx * Math.sin(0.34) - 0.03 * Math.cos(0.34));   // posts behind the plate
 
   // the things that go missing: a bike, a kettle, a dog's ball. At night where they were left; by morning on a doorstep, wet
   const bike = (wet) => {
@@ -159,7 +161,7 @@ function build(root) {
     return g;
   };
   const kettle = (wet) => {
-    const g = new THREE.Group(), m = std('#efe8d8', { roughness: wet ? 0.1 : 0.35, metalness: 0.4, ...(wet ? { envMap: ENV, envMapIntensity: 0.9 } : {}) });
+    const g = new THREE.Group(), m = std('#c8372d', { roughness: wet ? 0.1 : 0.35, metalness: 0.3, ...(wet ? { envMap: ENV, envMapIntensity: 0.9 } : {}) });   // red, so it's the same kettle by day
     const body = new THREE.Mesh(new THREE.LatheGeometry([0, 0.11, 0.125, 0.12, 0.09, 0.03, 0].map((r, k) => new THREE.Vector2(r, [0, 0, 0.05, 0.13, 0.19, 0.22, 0.23][k])), 20), m); g.add(body);
     const sp = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.03, 0.15, 8), m); sp.position.set(0.13, 0.12, 0); sp.rotation.z = -0.9; g.add(sp);
     const hd = new THREE.Mesh(new THREE.TorusGeometry(0.08, 0.014, 6, 16, Math.PI), std('#2a2a2a')); hd.position.set(0, 0.22, 0); g.add(hd);
@@ -167,34 +169,53 @@ function build(root) {
     return g;
   };
   const ballTex = canvasTex(128, 64, (g, w, h) => { g.fillStyle = '#d4e157'; g.fillRect(0, 0, w, h); g.strokeStyle = '#f4f7e6'; g.lineWidth = 6; g.beginPath(); for (let x = 0; x <= w; x += 4) g.lineTo(x, h / 2 + Math.sin(x / w * Math.PI * 4) * 14); g.stroke(); });
-  const ball = (wet) => { const m = new THREE.Mesh(new THREE.SphereGeometry(0.11, 18, 14), std('#ffffff', { map: ballTex, roughness: wet ? 0.2 : 0.7, ...(wet ? { envMap: ENV, envMapIntensity: 0.7 } : {}) })); m.castShadow = true; return m; };
+  const ball = (wet) => { const m = new THREE.Mesh(new THREE.SphereGeometry(0.14, 18, 14), std('#ffffff', { map: ballTex, roughness: wet ? 0.2 : 0.7, ...(wet ? { envMap: ENV, envMapIntensity: 0.7 } : {}) })); m.castShadow = true; return m; };
   const puddle = (x, y, z, r) => { const p = new THREE.Mesh(new THREE.CircleGeometry(r, 24), new THREE.MeshStandardMaterial({ color: '#2a3038', roughness: 0.04, metalness: 0.3, envMap: ENV, envMapIntensity: 1.0, transparent: true, opacity: 0.6 })); p.rotation.x = -Math.PI / 2; p.position.set(x, y + 0.004, z); p.receiveShadow = true; return p; };
   const put = (list, o) => { scene.add(o); list.push(o); return o; };
-  { const b = put(NIGHT, bike(false)); b.position.set(5.62, 0.15, -0.3); b.rotation.z = 0.12; }                 // against the corner wall
+  { const b = put(NIGHT, bike(false)); b.position.set(5.62, 0.15, -0.3); b.rotation.z = 0.12; bikeNight = b; }   // against the corner wall, under the lamp
   { const k = put(NIGHT, kettle(false)); k.position.set(5.8, 0.835, -4.35); }                                   // on number 1's sill
-  { const b = put(NIGHT, ball(false)); b.position.set(5.55, 0.51, -7.0); }                                     // on number 3's step
-  { const b = put(MORNING, bike(true)); b.position.set(-5.62, 0.15, -9.0); b.rotation.z = -0.12; put(MORNING, puddle(-5.4, 0.15, -9.0, 0.5)); }      // at number 4's door
+  { const b = put(NIGHT, ball(false)); b.position.set(5.5, 0.54, -7.2); }                                      // on number 3's step
+  { const b = put(MORNING, bike(true)); b.position.set(-5.62, 0.15, -9.4); b.rotation.z = -0.12; put(MORNING, puddle(-5.4, 0.15, -9.4, 0.5)); }      // at number 4's door, clear of its step
   { const k = put(MORNING, kettle(true)); k.position.set(-5.6, 0.4, -13.0); put(MORNING, puddle(-5.6, 0.4, -13.0, 0.2)); }                           // number 6's step: not hers
-  { const b = put(MORNING, ball(true)); b.position.set(-5.55, 0.51, -17.0); put(MORNING, puddle(-5.55, 0.4, -17.0, 0.16)); }                         // number 8
+  { const b = put(MORNING, ball(true)); b.position.set(-5.55, 0.54, -17.0); put(MORNING, puddle(-5.55, 0.4, -17.0, 0.18)); }                         // number 8
+  // the sweeper's wet brush swirls on the road by morning: detail, and a clue
+  for (let k = 0; k < 9; k++) {
+    const z = -9 - k * 3.3, x = 2.55 + 0.35 * Math.sin(k * 1.7), m = new THREE.Mesh(new THREE.RingGeometry(0.34, 0.5, 28, 1, 0.3 + k, 4.6), new THREE.MeshStandardMaterial({ color: '#1d2129', roughness: 0.06, metalness: 0.2, envMap: ENV, envMapIntensity: 0.9, transparent: true, opacity: 0, depthWrite: false }));
+    m.rotation.x = -Math.PI / 2; m.position.set(x, 0.006, z); scene.add(m); swirls.push(m);
+  }
 
-  // the sweeper, parked at the end of the street; its amber light blinks from the first frame
+  // the sweeper, parked at the end of the street; its amber light blinks from the first frame. A cab with headlights, a
+  // hopper behind it, two round side brushes at the front that spin on its line, and a spray bar
   {
-    const g = new THREE.Group(), body = std('#35544b', { roughness: 0.55 }), dark = std('#22262c', { roughness: 0.7 });
-    const b = (w, h, d, m, x, y, z) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); o.position.set(x, y, z); o.castShadow = o.receiveShadow = true; g.add(o); };
-    b(3.8, 1.3, 1.9, body, 0, 1.0, 0); b(1.3, 1.1, 1.8, body, 1.4, 2.2, 0); b(0.05, 0.7, 1.5, dark, 2.06, 2.3, 0); b(1.0, 0.7, 0.05, dark, 1.4, 2.3, 0.92);
-    const tank = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 2.0, 20), std('#c9cfd6', { roughness: 0.35, metalness: 0.5 })); tank.rotation.z = Math.PI / 2; tank.position.set(-0.8, 2.25, 0); tank.castShadow = true; g.add(tank);
-    for (const x of [-1.3, 1.2]) for (const z of [-0.95, 0.95]) { const w = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.25, 18), dark); w.rotation.x = Math.PI / 2; w.position.set(x, 0.38, z); g.add(w); }
-    for (const z of [-0.75, 0.75]) { const br = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.12, 20), std('#3b3530', { roughness: 0.95 })); br.position.set(2.05, 0.08, z); g.add(br); }
+    const g = new THREE.Group(), body = std('#35544b', { roughness: 0.55 }), dark = std('#22262c', { roughness: 0.7 }), glass = std('#1b2430', { roughness: 0.1, metalness: 0.6, envMap: ENV, envMapIntensity: 0.6 });
+    const b = (w, h, d, m, x, y, z) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); o.position.set(x, y, z); o.castShadow = o.receiveShadow = true; g.add(o); return o; };
+    b(2.3, 1.5, 1.9, body, -0.75, 1.35, 0);                                        // the hopper
+    const lid = b(2.3, 0.12, 1.9, body, -0.75, 2.2, 0); lid.rotation.z = -0.12;
+    b(1.5, 1.0, 1.8, body, 1.15, 1.0, 0); b(1.25, 0.95, 1.7, body, 1.2, 1.95, 0);  // the cab
+    b(0.05, 0.75, 1.5, glass, 1.84, 2.0, 0); b(1.0, 0.65, 0.05, glass, 1.2, 2.0, 0.87);
+    b(3.8, 0.12, 1.92, std('#e9e4d8'), 0.0, 0.85, 0);                              // a pale band
+    for (const z of [-0.6, 0.6]) { const hl = new THREE.Mesh(new THREE.CircleGeometry(0.1, 16), new THREE.MeshStandardMaterial({ color: '#fff6e0', emissive: '#fff1d0', emissiveIntensity: 2.2 })); hl.rotation.y = Math.PI / 2; hl.position.set(1.91, 0.95, z); g.add(hl); }
+    for (const x of [-1.3, 1.0]) for (const z of [-0.95, 0.95]) { const w = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.25, 18), dark); w.rotation.x = Math.PI / 2; w.position.set(x, 0.38, z); g.add(w); }
+    const bristle = canvasTex(128, 128, (q, w, h) => { q.fillStyle = '#3b3530'; q.beginPath(); q.arc(64, 64, 63, 0, Math.PI * 2); q.fill(); q.strokeStyle = '#8a7a62'; q.lineWidth = 3; for (let a = 0; a < 24; a++) { q.beginPath(); q.moveTo(64, 64); q.lineTo(64 + Math.cos(a / 24 * Math.PI * 2) * 62, 64 + Math.sin(a / 24 * Math.PI * 2) * 62); q.stroke(); } });
+    for (const z of [-1.0, 1.0]) {                                                  // the side brushes, tilted so they show
+      const br = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.08, 28), [std('#3b3530', { roughness: 0.95 }), std('#ffffff', { map: bristle, roughness: 0.95 }), std('#ffffff', { map: bristle, roughness: 0.95 })]);
+      const holder = new THREE.Group(); holder.position.set(1.95, 0.12, z); holder.rotation.x = z * 0.25; holder.add(br); g.add(holder); brushes.push(br);
+    }
+    b(0.08, 0.08, 1.8, dark, 2.05, 0.45, 0);                                       // the spray bar
+    const sp = new Float32Array(160 * 3), sd = new Float32Array(160);
+    for (let i = 0; i < 160; i++) sd[i] = (i * 0.618034) % 1;
+    const spg = new THREE.BufferGeometry(); spg.setAttribute('position', new THREE.BufferAttribute(sp, 3));
+    spray = new THREE.Points(spg, new THREE.PointsMaterial({ color: '#e8f2ff', size: 0.05, transparent: true, opacity: 0, depthWrite: false })); spray.seeds = sd; spray.frustumCulled = false; g.add(spray);
     beacon = new THREE.MeshStandardMaterial({ color: '#ffb347', emissive: '#ff9a1a', emissiveIntensity: 6 });
-    const bc = new THREE.Mesh(new THREE.SphereGeometry(0.17, 14, 10), beacon); bc.position.set(1.4, 2.95, 0); g.add(bc);
+    const bc = new THREE.Mesh(new THREE.SphereGeometry(0.17, 14, 10), beacon); bc.position.set(1.2, 2.55, 0); g.add(bc);
     glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: canvasTex(128, 128, (q, w, h) => { const r = q.createRadialGradient(64, 64, 0, 64, 64, 64); r.addColorStop(0, 'rgba(255,190,90,1)'); r.addColorStop(0.25, 'rgba(255,150,40,0.45)'); r.addColorStop(1, 'rgba(255,120,20,0)'); q.fillStyle = r; q.fillRect(0, 0, w, h); }), blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
-    glow.scale.set(1.6, 1.6, 1); glow.position.set(1.4, 2.95, 0); g.add(glow);
-    beam = new THREE.PointLight('#ff9a2a', 0, 14, 2); beam.position.set(1.4, 3.1, 0); g.add(beam);   // its amber pulse on the walls
-    b(3.82, 0.12, 1.92, std('#e9e4d8'), 0, 1.3, 0);                               // a pale band
-    g.position.set(0.8, 0, -40.5); g.rotation.y = 0.18; scene.add(g);
+    glow.scale.set(1.6, 1.6, 1); glow.position.set(1.2, 2.55, 0); g.add(glow);
+    beam = new THREE.PointLight('#ff9a2a', 0, 22, 2); beam.position.set(1.2, 2.8, 0); g.add(beam);   // its amber wash on the walls
+    g.position.set(0.8, 0, -40.5); g.rotation.y = -0.95; scene.add(g);              // three-quarters toward us, so its face and brushes show
   }
 
   // the cast: paper cards standing in the street. They appear with the morning, popping up like a pop-up book
+  const BLOB = canvasTex(128, 128, (q, w, h) => { const r = q.createRadialGradient(64, 64, 0, 64, 64, 64); r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(1, 'rgba(255,255,255,0)'); q.fillStyle = r; q.fillRect(0, 0, w, h); });
   const card = (canvases, h, x, y, z, side, pop) => {
     const texs = canvases.map((c) => { const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; });
     const asp = canvases[0].width / canvases[0].height;
@@ -203,18 +224,23 @@ function build(root) {
     const m = new THREE.Mesh(geo, mat); m.castShadow = true;
     m.customDepthMaterial = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map: texs[0], alphaTest: 0.5 });
     const pivot = new THREE.Group(); pivot.position.set(x, y, z); pivot.add(m); scene.add(pivot);
-    const C1 = { pivot, m, mat, texs, side, pop, show: (i) => { mat.map = mat.emissiveMap = texs[i]; m.customDepthMaterial.map = texs[i]; } };
+    const blob = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: BLOB, color: '#000000', transparent: true, opacity: 0.42, depthWrite: false }));
+    blob.rotation.x = -Math.PI / 2; blob.position.set(x, y + 0.006, z); blob.scale.set(h * asp * 1.25, h * 0.32, 1); scene.add(blob);   // a soft contact shadow
+    const C1 = { pivot, m, mat, texs, side, pop, blob, show: (i) => { mat.map = mat.emissiveMap = texs[i]; m.customDepthMaterial.map = texs[i]; } };
     CARDS.push(C1); return C1;
   };
   const P = DAWN0 + 0.5;
   card([kettleWoman()], 1.62, -4.72, 0.15, -11.3, -1, P + 0.15);                    // number 6: the kettle on her step isn't hers
-  card([girl()], 1.25, -4.7, 0.15, -17.8, -1, P);                                   // number 8, and her dog
+  card([girl(false), girl(true)], 1.25, -4.7, 0.15, -17.8, -1, P).swap = BLAME;     // number 8, and her dog: she points on "blames"
   card([dog()], 0.55, -4.55, 0.15, -17.0, -1, P + 0.08);
   card([paperMan(false), paperMan(true)], 1.76, -4.78, 0.15, -22.6, -1, P + 0.3).swap = BLAME;   // number 10, across from 9
-  card([moleMan(false), moleMan(true)], 1.8, 5.5, 0.4, -22.4, 1, P + 0.4).swap = PAST;          // number 9
+  const mole = card([moleMan(false), moleMan(true)], 1.8, 5.5, 0.4, -22.4, 1, P + 0.4); mole.swap = PAST;   // number 9
+  const puff = canvasTex(64, 64, (q, w, h) => { const r = q.createRadialGradient(32, 32, 0, 32, 32, 32); r.addColorStop(0, 'rgba(255,255,255,0.9)'); r.addColorStop(1, 'rgba(255,255,255,0)'); q.fillStyle = r; q.fillRect(0, 0, w, h); });
+  for (let i = 0; i < 3; i++) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: puff, transparent: true, depthWrite: false, opacity: 0 })); sp.scale.set(0.05, 0.09, 1); mole.m.add(sp); steam.push(sp); }   // steam off his mug
 
   // light: a hemisphere for sky and ground, one directional light (the moon, then the sun) with soft shadows
   hemi = new THREE.HemisphereLight('#4058a0', '#0c0f1c', 0.55); scene.add(hemi);
+  fill = new THREE.DirectionalLight('#ffd9a8', 0); fill.position.set(10, 3, -14); fill.target.position.set(-6, 1, -16); scene.add(fill); scene.add(fill.target);   // sunlight bounced off the sunlit houses
   sun = new THREE.DirectionalLight('#9db4ff', 0.3); sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -15, right: 15, top: 15, bottom: -15, near: 1, far: 140 });
   sun.shadow.bias = -0.0003; sun.shadow.normalBias = 0.04;
@@ -241,20 +267,22 @@ function build(root) {
 
 // ------------------------------------------------------------------ the camera: one travelling shot, no cuts
 const KEYS = () => [
-  [0, [-4.0, 1.3, 5.6], [-2.6, 1.2, -12]],                                       // the name plate, the street beyond it, night
-  [T0('l02'), [-0.4, 1.35, 3.0], [5.4, 0.7, -0.8]],                              // a bike, left against the corner wall
-  [word('l02', 'ball', 0.8), [0.4, 1.3, -1.6], [5.4, 0.7, -7.0]],               // a kettle on a sill, a ball on a step
-  [T0('l03') + 0.5, [-1.4, 1.15, -5.2], [-5.3, 0.8, -9.2]],                      // morning: the bike, washed, at number 4's door
+  [0, [2.6, 1.45, 5.0], [4.75, 1.25, -0.5]],                                       // frame 0: LINDEN ROW, a red bike under a street lamp
+  [GONE + 0.25, [2.5, 1.42, 3.7], [5.25, 0.75, -0.4]],                             // "vanishes": held on the bike; the lamp flickers, the bike is gone
+  [word('l02', 'kettle', 0.4) - 0.1, [1.6, 1.35, 1.0], [5.5, 0.95, -4.6]],       // a kettle on a sill
+  [word('l02', 'ball', 0.8), [1.4, 1.3, -1.6], [5.3, 0.6, -7.2]],                // a ball on a step
+  [T0('l03') + 0.5, [-1.4, 1.15, -5.2], [-5.3, 0.8, -9.8]],                      // morning: the bike, washed, at number 4's door
   [T1('l03') - 0.1, [-1.2, 1.15, -7.6], [-5.2, 0.85, -11.6]],
-  [T0('l04') + 0.15, [-1.1, 1.15, -8.6], [-5.0, 0.9, -12.6]],                    // the kettle at number 6: not hers
-  [T1('l04') + 0.1, [-1.0, 1.2, -10.2], [-5.0, 0.95, -13.0]],
-  [T0('l05') + 0.2, [-0.9, 1.25, -12.4], [-4.8, 1.0, -17.2]],                    // the street, cross: the girl, her dog, the man at 10
-  [word('l05', 'new', 0.5), [-0.6, 1.3, -13.6], [-4.8, 1.05, -19.4]],
-  [word('l05', 'nine', 0.95) + 0.1, [1.0, 1.5, -17.6], [5.3, 1.35, -22.3]],     // number nine
+  [T0('l04') + 0.15, [-1.3, 1.2, -8.6], [-5.0, 0.95, -12.2]],                    // the kettle at number 6: not hers
+  [T1('l04'), [-2.4, 1.32, -9.9], [-4.9, 1.12, -12.0]],                          // closer, on her face
+  [T0('l05') + 0.15, [-1.6, 1.3, -12.6], [-4.8, 1.0, -17.4]],                    // the street, cross: the girl points, the man at 10 glares
+  [word('l05', 'new', 0.45) - 0.15, [-1.0, 1.35, -13.8], [-4.6, 1.0, -18.8]],
+  [word('l05', 'man', 0.5) + 0.05, [-0.2, 1.4, -15.2], [0.9, 0.15, -18.8]],     // the turn: over the wet swirls on the road
+  [word('l05', 'number', 0.62), [0.8, 1.45, -17.4], [5.3, 1.35, -22.3]],         // number nine
   [word('l06', 'mole', 0.5), [3.75, 1.66, -20.95], [5.45, 1.72, -22.4]],        // the man with the mole, close
-  [T0('l07'), [3.6, 1.68, -21.2], [5.4, 1.7, -22.45]],
-  [word('l07', 'same', 0.55), [2.2, 1.6, -23.0], [0.9, 1.3, -40]],              // the same week as... the end of the street
-  [DUR, [1.4, 1.35, -31.0], [0.8, 1.35, -40.5]],
+  [T0('l07') + 0.2, [3.55, 1.68, -21.15], [5.4, 1.72, -22.45]],
+  [word('l07', 'same', 0.55) + 0.3, [2.2, 1.6, -23.0], [0.9, 1.3, -40]],        // the same week as... the end of the street
+  [DUR, [1.6, 1.4, -29.0], [0.8, 1.35, -40.5]],
 ];
 let PATH = null;
 function path() {
@@ -269,15 +297,15 @@ function captions(g, t) {
   for (let i = 0; i < WORDS.length; i++) { const w = WORDS[i], nx = WORDS[i + 1], end = nx ? Math.min(nx.t0, w.t1 + 0.35) : w.t1 + 0.6; if (t >= w.t0 - 0.02 && t < end) cur = w; }
   if (!cur) return;
   const k = 1 + 0.12 * (1 - ss(seg(t, cur.t0 - 0.02, cur.t0 + 0.08)));
-  g.save(); g.translate(540, 1330); g.scale(k, k);
+  g.save(); g.translate(540, 1478); g.scale(k, k);                             // low, under faces and chests
   g.font = '700 118px Fredoka'; g.textAlign = 'center'; g.textBaseline = 'alphabetic'; g.lineJoin = 'round';
   g.lineWidth = 20; g.strokeStyle = 'rgba(16,20,38,0.9)'; g.strokeText(cur.w, 0, 0); g.fillStyle = '#fff8ec'; g.fillText(cur.w, 0, 0);
   g.restore();
 }
 
 // ------------------------------------------------------------------ one frame
-const NIGHTL = { top: '#0b1430', hor: '#22305a', fog: '#141d3d', dens: 0.02, hs: '#4058a0', hg: '#0c0f1c', hi: 0.72, sc: '#9db4ff', si: 0.32, dir: [0.45, 0.85, 0.28], exp: 1.15 };
-const MORNL = { top: '#6fa7ef', hor: '#ffd6a0', fog: '#efd2ad', dens: 0.016, hs: '#a7cbff', hg: '#b38c6a', hi: 1.2, sc: '#ffcf9a', si: 3.6, dir: [-0.55, 0.22, -0.8], exp: 1.18 };   // brighter than the lit night, so the turn is one rise
+const NIGHTL = { top: '#0b1430', hor: '#22305a', fog: '#141d3d', dens: 0.02, hs: '#4058a0', hg: '#0c0f1c', hi: 0.95, sc: '#9db4ff', si: 0.5, dir: [0.45, 0.85, 0.28], exp: 1.3 };   // a little brighter: the first seconds were too dark
+const MORNL = { top: '#6fa7ef', hor: '#ffd6a0', fog: '#efd2ad', dens: 0.016, hs: '#b4d4ff', hg: '#c49a74', hi: 1.45, sc: '#ffcf9a', si: 3.6, dir: [-0.55, 0.22, -0.8], exp: 1.2 };   // brighter than the lit night, so the turn is one rise
 const cA = new THREE.Color(), cB = new THREE.Color(), dA = new THREE.Vector3(), dB = new THREE.Vector3(), tmp = new THREE.Vector3();
 const mixC = (target, a, b, k) => target.copy(cA.set(a)).lerp(cB.set(b), k);
 
@@ -299,25 +327,37 @@ function frame(t) {
   skyMat.uniforms.uDir.value.copy(L); mixC(skyMat.uniforms.uCol.value, '#c8d6ff', '#ffe2b0', k);
   skyMat.uniforms.uAmt.value = 0.25 + 0.75 * k; skyMat.uniforms.uDisc.value = 1.2 + 4 * k;
   for (const p of lamps) p.intensity = 13 * (1 - k);
+  lamps[1].intensity *= flicker(t); lanterns[1].emissiveIntensity = 0;            // set below with the others, then flickered
+  bikeNight.userData.gone = t >= GONE + 0.1;
   for (const m of lanterns) m.emissiveIntensity = 0.25 + 3.25 * (1 - k);   // dimmer than they could be: passing close, they flashed the frame
+  lanterns[1].emissiveIntensity *= flicker(t);
+  fill.intensity = 0.9 * k; for (const m of [panes[0], panes.dark]) m.envMapIntensity = 0.15 + 0.65 * k;
+  for (const m of swirls) m.material.opacity = 0.5 * k;
   for (const m of panes) m.emissiveIntensity = 0.65 * (1 - k) + 0.05;
-  const blink = 0.3 + 0.7 * Math.pow(0.5 + 0.5 * Math.sin(t * 2 * Math.PI * 0.9), 3);
-  beacon.emissiveIntensity = 6 * blink; glow.material.opacity = blink; beam.intensity = 14 * blink;
+  const blink = 0.3 + 0.7 * Math.pow(0.5 + 0.5 * Math.sin(t * 2 * Math.PI * 0.9), 3), WORK = word('l07', 'something', 0.75) - 0.2, wk = ss(seg(t, WORK, WORK + 0.5));
+  for (const b of brushes) b.rotation.y = wk * (t - WORK) * 9;                   // on "something else" the brushes spin
+  spray.material.opacity = 0.7 * wk;                                             // and the bar sprays
+  { const pa = spray.geometry.attributes.position; for (let i = 0; i < spray.seeds.length; i++) { const f = (spray.seeds[i] + t * 1.6) % 1, zz = (i % 20) / 19 * 1.8 - 0.9; pa.setXYZ(i, 2.1 + f * 0.9, 0.45 + f * 0.25 - f * f * 0.6, zz * (1 + f * 0.3)); } pa.needsUpdate = true; }
+  beacon.emissiveIntensity = 6 * blink; glow.material.opacity = blink; beam.intensity = (14 + 26 * wk) * blink;   // its amber wash grows as it starts
   trail.material.opacity = 0.6 * k;
   for (const c of clouds) mixC(c.material.color, '#3a4670', '#ffffff', k);
   st.renderer.toneMappingExposure = N.exp + (M.exp - N.exp) * k;
-  for (const o of NIGHT) o.visible = k < 0.5;
+  for (const o of NIGHT) o.visible = k < 0.5 && !o.userData.gone;
   for (const o of MORNING) o.visible = k >= 0.5;
 
   // the cast: each card turns most of the way to the camera; it pops up with the morning and is still once it lands
   for (const c of CARDS) {
     const up = ss(seg(t, c.pop, c.pop + 0.35));
-    c.pivot.visible = up > 0;
+    c.pivot.visible = up > 0; c.blob.visible = up > 0; c.blob.material.opacity = 0.42 * up;
     const base = c.side > 0 ? -Math.PI / 2 : Math.PI / 2, dx = cam.position.x - c.pivot.position.x, dz = cam.position.z - c.pivot.position.z;
     let toCam = Math.atan2(dx, dz) - base; toCam = Math.atan2(Math.sin(toCam), Math.cos(toCam));
     c.pivot.rotation.set(0, base + 0.72 * toCam, 0);
     c.m.rotation.x = -(1 - up) * Math.PI / 2;                                    // lying flat, then up on its feet
     if (c.swap !== undefined) c.show(t >= c.swap ? 1 : 0);
+  }
+  for (let i = 0; i < steam.length; i++) {                                       // steam off his mug: three wisps, rising
+    const f = (t * 0.45 + i / 3) % 1;
+    steam[i].position.set(0.15 + Math.sin(t * 2.1 + i * 2.0) * 0.03, 1.09 + f * 0.34, 0.01); steam[i].material.opacity = 0.28 * Math.sin(Math.PI * f);   // faint: a blob read as a mark on his coat
   }
 
   st.finish.uniforms.uFrame.value = Math.round(t * 30); st.finish.uniforms.uGrain.value = 0.02; st.finish.uniforms.uVig.value = 0.32;

@@ -48,7 +48,9 @@ export function kettleWoman() {
     ell(g, 206, 1000, 52, 20, '#f4a7b6'); ell(g, 306, 1000, 52, 20, '#f4a7b6');                 // slippers
     rr(g, 190, 900, 30, 92, 12, skin); rr(g, 292, 900, 30, 92, 12, skin);                         // ankles
     poly(g, [[170, 330], [342, 330], [392, 930], [120, 930]], gown);                               // the gown
+    g.save(); g.beginPath(); g.moveTo(170, 330); g.lineTo(342, 330); g.lineTo(392, 930); g.lineTo(120, 930); g.closePath(); g.clip();
     for (let k = 0; k < 7; k++) { line(g, [[150 + k * 40, 420], [230 + k * 40, 920]], 3, dark); line(g, [[362 - k * 40, 420], [282 - k * 40, 920]], 3, dark); }
+    g.restore();                                                                                   // the quilting stays inside the gown (outside it, each line grew its own white border)
     poly(g, [[256, 330], [210, 330], [256, 460], [302, 330]], '#f6d5dc');                          // the collar
     rr(g, 140, 540, 232, 34, 14, dark); ell(g, 300, 580, 26, 14, dark, 0.5);                      // the belt, its knot
     poly(g, [[170, 340], [128, 360], [112, 600], [160, 610], [186, 420]], gown);                   // sleeves, hands clasped
@@ -66,14 +68,15 @@ export function kettleWoman() {
 
 // --------------------------------------------------------------------------------- the girl at number eight, and her dog
 // A yellow raincoat, red wellies, two puffs of hair. Cross, looking along the street toward number nine (our right).
-export function girl() {
+export function girl(point) {                                       // point: on "blames", her arm out toward number nine
   return paper(512, 1024, (g) => {
     const skin = '#6e4532', coat = '#f2c232', dark = '#c99a1a';
     rr(g, 178, 850, 64, 150, 18, '#d1453b'); rr(g, 270, 850, 64, 150, 18, '#d1453b');            // wellies
     poly(g, [[170, 470], [342, 470], [380, 870], [132, 870]], coat);                               // the raincoat
     line(g, [[256, 520], [256, 860]], 4, dark); for (const y of [560, 650, 740]) ell(g, 272, y, 9, 9, dark);
     poly(g, [[176, 478], [138, 500], [120, 700], [166, 706], [190, 560]], coat); ell(g, 144, 716, 28, 26, skin);
-    poly(g, [[336, 478], [374, 500], [392, 700], [346, 706], [322, 560]], coat); ell(g, 368, 716, 28, 26, skin);
+    if (point) { poly(g, [[322, 482], [452, 420], [466, 452], [340, 540]], coat); ell(g, 462, 434, 20, 19, skin); rr(g, 464, 424, 22, 10, 5, skin); }   // inside the border's room
+    else { poly(g, [[336, 478], [374, 500], [392, 700], [346, 706], [322, 560]], coat); ell(g, 368, 716, 28, 26, skin); }
     rr(g, 232, 420, 48, 64, 14, skin);                                                             // neck
     ell(g, 256, 340, 96, 110, skin);                                                               // head
     ell(g, 160, 260, 62, 62, '#1d1512'); ell(g, 352, 260, 62, 62, '#1d1512');                     // two puffs
