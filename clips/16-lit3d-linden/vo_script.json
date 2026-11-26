@@ -1,0 +1,40 @@
+{
+  "note": "Lab clip 16, Linden Row (26 Nov): a 20 s test of a new style for HQ and the user, flat paper characters in a lit 3D street, one travelling shot. The opening of an original story with a root-cause angle; the mole guy is the suspect. The narrator only (af_heart, 1.0). Each line is its own entry so the pauses are set by hand.",
+  "take": {
+    "id": "k-heart",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "speed": 1.0
+  },
+  "ref_text": "The bench outside the stall is warm from the afternoon. A kettle hisses, a cyclist rings his bell, and somebody laughs at the next table.",
+  "lines": [
+    {
+      "id": "l01",
+      "text": "Every night on Linden Row, something vanishes."
+    },
+    {
+      "id": "l02",
+      "text": "A bike. A kettle. A dog's ball."
+    },
+    {
+      "id": "l03",
+      "text": "Every morning, it's back on a doorstep, washed."
+    },
+    {
+      "id": "l04",
+      "text": "Not always the right doorstep."
+    },
+    {
+      "id": "l05",
+      "text": "The street blames the new man at number nine."
+    },
+    {
+      "id": "l06",
+      "text": "He has a mole, and a past."
+    },
+    {
+      "id": "l07",
+      "text": "But he moved in the same week as something else."
+    }
+  ]
+}
