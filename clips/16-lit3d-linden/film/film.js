@@ -269,13 +269,14 @@ function build(root) {
 const KEYS = () => [
   [0, [2.6, 1.45, 5.0], [4.75, 1.25, -0.5]],                                       // frame 0: LINDEN ROW, a red bike under a street lamp
   [GONE + 0.25, [2.5, 1.42, 3.7], [5.25, 0.75, -0.4]],                             // "vanishes": held on the bike; the lamp flickers, the bike is gone
-  [word('l02', 'kettle', 0.4) - 0.1, [1.6, 1.35, 1.0], [5.5, 0.95, -4.6]],       // a kettle on a sill
+  [word('l02', 'bike', 0.15) + 0.3, [2.1, 1.38, 2.6], [5.3, 0.75, -0.9]],        // "A bike.": its empty spot
+  [word('l02', 'kettle', 0.4) - 0.05, [1.6, 1.35, 1.0], [5.5, 0.95, -4.6]],      // a kettle on a sill
   [word('l02', 'ball', 0.8), [1.4, 1.3, -1.6], [5.3, 0.6, -7.2]],                // a ball on a step
   [T0('l03') + 0.5, [-1.4, 1.15, -5.2], [-5.3, 0.8, -9.8]],                      // morning: the bike, washed, at number 4's door
   [T1('l03') - 0.1, [-1.2, 1.15, -7.6], [-5.2, 0.85, -11.6]],
   [T0('l04') + 0.15, [-1.3, 1.2, -8.6], [-5.0, 0.95, -12.2]],                    // the kettle at number 6: not hers
-  [T1('l04'), [-2.4, 1.32, -9.9], [-4.9, 1.12, -12.0]],                          // closer, on her face
-  [T0('l05') + 0.15, [-1.6, 1.3, -12.6], [-4.8, 1.0, -17.4]],                    // the street, cross: the girl points, the man at 10 glares
+  [T0('l04') + 0.95, [-2.4, 1.32, -9.9], [-4.9, 1.12, -12.0]],                   // closer, on her face
+  [T0('l05') + 0.35, [-1.6, 1.3, -12.6], [-4.8, 1.0, -17.4]],                    // the street, cross: the girl points, the man at 10 glares
   [word('l05', 'new', 0.45) - 0.15, [-1.0, 1.35, -13.8], [-4.6, 1.0, -18.8]],
   [word('l05', 'man', 0.5) + 0.05, [-0.2, 1.4, -15.2], [0.9, 0.15, -18.8]],     // the turn: over the wet swirls on the road
   [word('l05', 'number', 0.62), [0.8, 1.45, -17.4], [5.3, 1.35, -22.3]],         // number nine
@@ -293,6 +294,7 @@ function path() {
 
 // ------------------------------------------------------------------ the one-word captions
 function captions(g, t) {
+  t = Math.round(t * 30) / 30;                                                   // whole frames: a word never changes inside the blur's shutter (it ghosted)
   let cur = null;
   for (let i = 0; i < WORDS.length; i++) { const w = WORDS[i], nx = WORDS[i + 1], end = nx ? Math.min(nx.t0, w.t1 + 0.35) : w.t1 + 0.6; if (t >= w.t0 - 0.02 && t < end) cur = w; }
   if (!cur) return;

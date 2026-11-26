@@ -25,5 +25,6 @@
     "file": "vo.json"
   },
   "sfx": [],
-  "gl": true
+  "gl": true,
+  "blurMax": 6
 }
