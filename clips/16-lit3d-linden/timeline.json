@@ -1,6 +1,6 @@
 {
   "title": "Linden Row",
-  "duration": 21.0,
+  "duration": 19.5,
   "fps": 30,
   "bpm": 120,
   "formats": [
@@ -9,8 +9,8 @@
   "loop": false,
   "marks": {
     "hook": 0,
-    "end": 21.0,
-    "done": 21.0
+    "end": 37.0,
+    "done": 39.0
   },
   "mix": {
     "music": -7,

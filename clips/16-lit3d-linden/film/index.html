@@ -4,18 +4,28 @@
 <meta charset="utf-8">
 <title>Linden Row</title>
 <style>
+  @font-face { font-family: 'Fredoka'; src: url('../../../assets/fonts/Fredoka-700.woff2') format('woff2'); font-weight: 700; }
   html, body { margin: 0; background: #000; overflow: hidden; }
   #stage { position: relative; overflow: hidden; background: #000; transform-origin: 0 0; }
   .scene { position: absolute; inset: 0; overflow: hidden; }
   canvas { position: absolute; left: 0; top: 0; }
 </style>
+<!-- three.js r170, MIT: ../../../engines/stage3d/vendor/three/LICENSE -->
+<script type="importmap">
+{ "imports": {
+  "three": "../../../engines/stage3d/vendor/three/three.module.min.js",
+  "three/addons/": "../../../engines/stage3d/vendor/three/addons/",
+  "stage3d": "../../../engines/stage3d/stage3d.js"
+} }
+</script>
 </head>
 <body>
 <div id="stage"></div>
 <script src="../../../engines/core/motion.js"></script>
 <script src="data.js"></script>
+<script src="words.js"></script>
 <script src="../../../engines/core/core.js"></script>
 <script src="../../../engines/core/lab.js"></script>
-<script src="film.js"></script>
+<script type="module" src="film.js"></script>
 </body>
 </html>
